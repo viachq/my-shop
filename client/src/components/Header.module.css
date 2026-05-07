@@ -1,0 +1,278 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 55px;
+}
+
+.logo {
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--fg);
+  text-decoration: none;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+.logo span {
+  color: var(--red);
+}
+
+/* Catalog button — Jabko gradient border style */
+.catalogWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.catalogBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 24px;
+  border-radius: var(--radius);
+  background: var(--red);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  transition: background .2s;
+}
+.catalogBtn:hover { background: var(--primary-dark); }
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--bg-card);
+  min-width: 260px;
+  border: 1px solid var(--border);
+  z-index: 50;
+  padding: 8px 0;
+}
+.dropdown a {
+  display: block;
+  color: var(--text);
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color .15s, background .15s;
+}
+.dropdown a:hover {
+  color: var(--fg);
+  background: var(--surface-hover);
+}
+
+/* Search */
+.searchWrap {
+  flex: 1;
+  position: relative;
+}
+.search {
+  height: 40px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  font-size: 14px;
+  color: var(--text-light);
+  pointer-events: none;
+  z-index: 1;
+}
+.search input {
+  width: 100%;
+  height: 100%;
+  padding: 0 16px 0 40px;
+  background: var(--bg-card);
+  border: none;
+  border-radius: var(--radius);
+  color: var(--fg);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: background .2s;
+}
+.search input::placeholder { color: var(--text-light); }
+.search input:focus { background: var(--bg-elevated); }
+
+/* Search dropdown */
+.searchDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 200;
+  overflow: hidden;
+}
+.sdLabel {
+  padding: 8px 14px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.sdRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: background .12s;
+}
+.sdRow:hover { background: var(--bg-elevated); }
+.sdRowIcon { color: var(--text-light); font-size: 12px; flex-shrink: 0; }
+.sdRowText { flex: 1; font-size: 14px; color: var(--fg); }
+.sdRemove {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 11px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+  transition: opacity .12s;
+}
+.sdRemove:hover { opacity: 1; color: var(--red); }
+.sdProduct {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background .12s;
+}
+.sdProduct:hover { background: var(--bg-elevated); }
+.sdImg {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.sdImgEmpty {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  flex-shrink: 0;
+}
+.sdProductName {
+  flex: 1;
+  font-size: 13px;
+  color: var(--fg);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.sdProductPrice {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--red);
+  flex-shrink: 0;
+}
+
+/* Action buttons */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  height: 40px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-interactive);
+  background: var(--bg-card);
+  color: var(--fg);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background .15s, border-color .15s;
+}
+.actionBtn svg { font-size: 15px; }
+.actionBtn span { font-size: 14px; }
+.actionBtn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-hover);
+}
+.cartBtn {
+  position: relative;
+}
+.cartBadge {
+  background: var(--red);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+/* Category nav — Jabko style: simple text links row */
+.nav {
+  border-bottom: 1px solid var(--border);
+}
+.navInner {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  height: 36px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.navInner::-webkit-scrollbar { display: none; }
+.navLink {
+  padding: 0 16px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .15s;
+}
+.navLink:hover {
+  color: var(--fg);
+}
+
+@media (max-width: 900px) {
+  .row { flex-wrap: wrap; height: auto; padding: 10px 0; gap: 10px; }
+  .searchWrap { order: 10; flex-basis: 100%; }
+  .search { height: 40px; }
+  .actionBtn span { display: none; }
+}
+@media (max-width: 540px) {
+  .logo { font-size: 20px; }
+}

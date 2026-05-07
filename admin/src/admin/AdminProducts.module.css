@@ -1,0 +1,290 @@
+/* ── Top bar (merged toolbar) ────────────────────────────── */
+.topBar {
+  background: var(--bg-card);
+  padding: 12px 32px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.title { font-size: 20px; font-weight: 700; color: var(--fg); }
+.addBtn {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--primary); color: #fff; border: none;
+  padding: 10px 20px; border-radius: 3px; font-size: 13px; font-weight: 600; cursor: pointer;
+  white-space: nowrap;
+}
+.addBtn:hover { background: var(--primary-dark); }
+.content { padding: 28px 32px; }
+
+/* ── Search ─────────────────────────────────────────────── */
+.searchWrap { position: relative; min-width: 180px; flex: 1; max-width: 260px; }
+.searchIcon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 14px;
+}
+.searchInput {
+  width: 100%; padding: 10px 12px 10px 36px; border: none;
+  border-radius: 3px; font-size: 13px; outline: none; box-sizing: border-box;
+  background: var(--bg-elevated); color: var(--fg);
+}
+.searchInput::placeholder { color: var(--text-light); }
+.searchInput:focus { box-shadow: 0 0 0 1px var(--primary); }
+
+/* ── Selects ────────────────────────────────────────────── */
+.catSelect {
+  padding: 8px 14px; border: none; border-radius: 3px;
+  font-size: 13px; outline: none; cursor: pointer; background: var(--bg-elevated); color: var(--fg);
+  flex-shrink: 0; min-width: 0; height: 37px; font-family: inherit;
+}
+.catSelect:focus { box-shadow: 0 0 0 1px var(--primary); }
+
+/* ── View toggle ────────────────────────────────────────── */
+.viewToggle { display: flex; gap: 2px; flex-shrink: 0; }
+.viewBtn {
+  width: 36px; height: 36px; border: 1px solid var(--border); background: var(--bg-elevated);
+  border-radius: 3px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-light); font-size: 15px; transition: all 0.15s;
+}
+.viewBtnActive { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* ── Count + spacer ─────────────────────────────────────── */
+.count { font-size: 13px; color: var(--text-light); margin-left: auto; }
+
+/* ── Table ─────────────────────────────────────────────── */
+.tableWrap {
+  background: var(--bg-card); border-radius: 3px; overflow: hidden; border: 1px solid var(--border);
+}
+.table { width: 100%; border-collapse: collapse; }
+.table th {
+  text-align: left; padding: 14px 16px; font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light);
+  background: var(--bg-elevated); border-bottom: 1px solid var(--border);
+}
+.table td {
+  padding: 12px 16px; font-size: 13px; color: var(--fg);
+  border-bottom: 1px solid var(--border); vertical-align: middle;
+}
+.table tbody tr:hover { background: var(--surface-hover); }
+.table tbody tr:last-child td { border-bottom: none; }
+
+.thumb { width: 56px; height: 42px; object-fit: cover; border-radius: 3px; }
+.nameCell { font-weight: 600; max-width: 240px; }
+.price { font-weight: 700; color: var(--primary); }
+.oldPrice { text-decoration: line-through; color: var(--text-light); }
+
+.catBadge {
+  display: inline-block; padding: 3px 10px; border-radius: 3px;
+  font-size: 11px; font-weight: 600; background: rgba(196,42,44,0.1); color: #e04345;
+}
+.stockBadge {
+  display: inline-block; padding: 4px 10px; border-radius: 3px; font-size: 11px; font-weight: 600;
+}
+.stockOk { background: rgba(46,204,113,0.12); color: #2ecc71; }
+.stockLow { background: rgba(196,42,44,0.12); color: #e04345; }
+
+.badge {
+  display: inline-block; padding: 4px 10px; border-radius: 3px; font-size: 11px; font-weight: 600;
+}
+.badgeSale { background: rgba(196,42,44,0.12); color: #e04345; }
+.badgeNew { background: rgba(196,42,44,0.12); color: #e04345; }
+
+.actions { display: flex; gap: 6px; }
+.actionBtn {
+  width: 32px; height: 32px; border: 1px solid var(--border); background: var(--bg-elevated);
+  border-radius: 3px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text); font-size: 13px; transition: all 0.15s;
+}
+.actionBtn:hover { border-color: var(--primary); color: var(--primary); background: rgba(196,42,44,0.08); }
+.deleteBtn:hover { border-color: var(--accent-red); color: var(--accent-red); background: rgba(196,42,44,0.08); }
+
+.empty { text-align: center; padding: 40px 16px; color: var(--text-light); font-size: 14px; }
+
+/* ── Card grid — exact catalog layout ───────────────────── */
+.cardGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--bg-card);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--border-mid); }
+
+.cardBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 3px;
+  z-index: 2;
+}
+.cardBadgeSale { background: var(--primary); }
+
+.cardImgWrap { position: relative; cursor: pointer; }
+.cardImg {
+  width: 100%;
+  height: 300px;
+  object-fit: contain;
+  background: var(--bg-card);
+  display: block;
+  padding: 24px;
+  box-sizing: border-box;
+}
+.cardImgEmpty {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+.cardBody {
+  padding: 14px 18px 18px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardName {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  height: 45px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  flex: 1;
+  color: var(--fg);
+}
+
+.cardCategory {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+
+.cardPriceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+  margin-top: auto;
+}
+.cardPrice { font-size: 20px; font-weight: 700; color: var(--fg); }
+.cardOldPrice { font-size: 14px; text-decoration: line-through; color: var(--text-light); }
+
+.cardActions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.cardActionBtn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+}
+.cardActionBtn:first-child { background: var(--surface-hover); color: var(--text); }
+.cardActionBtn:first-child:hover { background: var(--border-mid); color: var(--fg); }
+.cardDeleteBtn { background: var(--primary); color: #fff; }
+.cardDeleteBtn:hover { opacity: 0.88; }
+
+.cardStock { display: none; }
+.cardStockOk, .cardStockLow { display: none; }
+
+/* ── Modal ─────────────────────────────────────────────── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal {
+  background: var(--bg-card); border-radius: 3px; padding: 32px;
+  max-width: 480px; width: 90%; max-height: 85vh; overflow-y: auto;
+  border: 1px solid var(--border);
+}
+.modalImg { width: 100%; height: 200px; object-fit: cover; border-radius: 3px; margin-bottom: 16px; }
+.modal h2 { font-size: 20px; color: var(--fg); margin-bottom: 16px; }
+.modalDetails { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.modalRow {
+  display: flex; justify-content: space-between; font-size: 14px; color: var(--text);
+  padding-bottom: 10px; border-bottom: 1px solid var(--border);
+}
+.closeBtn {
+  width: 100%; padding: 12px; background: var(--primary); color: #fff;
+  border: none; border-radius: 3px; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.closeBtn:hover { opacity: 0.9; }
+
+/* ── Form ──────────────────────────────────────────────── */
+.backBtn {
+  background: none; border: 1px solid var(--border); padding: 8px 14px;
+  border-radius: 3px; font-size: 13px; color: var(--text); cursor: pointer;
+}
+.backBtn:hover { border-color: var(--primary); color: var(--primary); }
+.form {
+  background: var(--bg-card); border-radius: 3px; padding: 32px;
+  border: 1px solid var(--border); max-width: 800px;
+}
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.field { margin-bottom: 0; }
+.label { display: block; font-size: 13px; font-weight: 600; color: var(--fg); margin-bottom: 6px; }
+.input {
+  width: 100%; padding: 10px 14px; border: none; border-radius: 3px;
+  font-size: 13px; outline: none; font-family: inherit; box-sizing: border-box;
+  background: var(--bg-elevated); color: var(--fg);
+}
+.input::placeholder { color: var(--text-light); }
+.input:focus { box-shadow: 0 0 0 1px var(--primary); }
+.preview { margin-bottom: 20px; }
+.preview img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 3px; }
+.formActions {
+  display: flex; gap: 12px; justify-content: flex-end;
+  margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border);
+}
+.cancelBtn {
+  padding: 10px 24px; border: 1px solid var(--border); background: var(--bg-elevated);
+  border-radius: 3px; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;
+}
+.cancelBtn:hover { border-color: var(--text); color: var(--fg); }
+.saveBtn {
+  padding: 10px 24px; background: var(--primary); color: #fff; border: none;
+  border-radius: 3px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.saveBtn:hover { background: var(--primary-dark); }
+
+/* ── Images grid ── */
+.imagesGrid {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 4px;
+}
+.imageThumb {
+  position: relative; width: 100px; height: 75px; border-radius: 3px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.imageThumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.imageRemove {
+  position: absolute; top: 4px; right: 4px; width: 22px; height: 22px;
+  border-radius: 50%; border: none; background: rgba(0,0,0,0.6); color: #fff;
+  font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.imageRemove:hover { background: var(--accent-red); }

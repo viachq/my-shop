@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --primary: #c42a2c;
+  --primary-dark: #a82325;
+  --primary-light: #e84345;
+  --accent: #00cec9;
+  --red: #c42a2c;
+  --green: #2ecc71;
+
+  --dark: #000;
+  --dark-soft: #111;
+  --bg: #000;
+  --bg-card: #1d1d1d;
+  --bg-elevated: #252525;
+  --bg-input: #1d1d1d;
+  --white: #fff;
+
+  /* semantic: primary text/headings — changes with theme */
+  --fg: #fff;
+
+  --text: #999;
+  --text-light: #666;
+  --text-primary: #fff;
+
+  --border: rgba(255,255,255,0.08);
+  --border-hover: rgba(255,255,255,0.2);
+  /* semi-transparent surface variants — change with theme */
+  --border-mid: rgba(255,255,255,0.1);
+  --border-interactive: rgba(255,255,255,0.15);
+  --surface-hover: rgba(255,255,255,0.05);
+
+  --shadow: none;
+  --shadow-hover: none;
+  --radius: 3px;
+  --radius-sm: 3px;
+  --gradient: linear-gradient(89deg, #f50008, #86007b 25%, #4e26cf 50%, #86007b 75%, #f50008);
+}
+
+html[data-theme="light"] {
+  --bg: #f2f2f7;
+  --bg-card: #ffffff;
+  --bg-elevated: #e5e5ea;
+  --bg-input: #ffffff;
+  --white: #fff;
+  --fg: #1c1c1e;
+
+  --text: #3a3a3c;
+  --text-light: #6e6e73;
+  --text-primary: #1c1c1e;
+
+  --border: rgba(0,0,0,0.08);
+  --border-hover: rgba(0,0,0,0.2);
+  --border-mid: rgba(0,0,0,0.1);
+  --border-interactive: rgba(0,0,0,0.15);
+  --surface-hover: rgba(0,0,0,0.04);
+
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  --shadow-hover: 0 4px 12px rgba(0,0,0,0.14);
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+img { max-width: 100%; height: auto; }
+button { cursor: pointer; border: none; font-family: inherit; }
+
+.container {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media print {
+  header, footer, nav { display: none !important; }
+}

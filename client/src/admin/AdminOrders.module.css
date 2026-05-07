@@ -1,0 +1,113 @@
+.topBar {
+  background: var(--white); padding: 16px 32px;
+  display: flex; align-items: center; border-bottom: 1px solid var(--border);
+}
+.title { font-size: 20px; font-weight: 700; color: var(--dark); }
+.content { padding: 28px 32px; }
+
+.statusTabs {
+  display: flex; gap: 4px; margin-bottom: 20px;
+  background: var(--white); border-radius: 10px; padding: 4px; border: 1px solid var(--border);
+}
+.statusTab {
+  padding: 8px 16px; border: none; background: none; border-radius: 8px;
+  font-size: 13px; font-weight: 500; color: var(--text-light); cursor: pointer; transition: all 0.15s;
+}
+.statusTab:hover { background: #f0f2f5; }
+.tabActive { background: var(--primary); color: var(--white); }
+.tabActive:hover { background: var(--primary); }
+.tabCount { font-weight: 700; margin-left: 4px; }
+
+.toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.searchWrap { position: relative; width: 360px; }
+.searchIcon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 14px; }
+.searchInput {
+  width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 13px; outline: none;
+}
+.searchInput:focus { border-color: var(--primary); }
+
+.tableWrap {
+  background: var(--white); border-radius: 12px; overflow: hidden; border: 1px solid var(--border);
+}
+.table { width: 100%; border-collapse: collapse; }
+.table th {
+  text-align: left; padding: 14px 16px; font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light);
+  background: #f8f9fa; border-bottom: 1px solid var(--border);
+}
+.table td {
+  padding: 14px 16px; font-size: 13px; color: var(--dark);
+  border-bottom: 1px solid #f0f0f0; vertical-align: middle;
+}
+.table tbody tr:hover { background: #fafbfc; }
+.table tbody tr:last-child td { border-bottom: none; }
+
+.orderId { font-weight: 700; color: var(--primary); }
+.customerName { font-weight: 600; }
+.customerPhone { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+.total { font-weight: 700; }
+
+.status {
+  display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.status_new { background: #e3f2fd; color: #1565c0; }
+.status_processing { background: #fff3e0; color: #e65100; }
+.status_shipped { background: #f3e5f5; color: #7b1fa2; }
+.status_delivered { background: #e8f5e9; color: #2e7d32; }
+.status_cancelled { background: #fce4ec; color: #c62828; }
+
+.actionBtn {
+  width: 32px; height: 32px; border: 1px solid var(--border); background: var(--white);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #666; font-size: 13px; transition: all 0.15s;
+}
+.actionBtn:hover { border-color: var(--primary); color: var(--primary); }
+
+.empty { text-align: center; padding: 40px 16px; color: var(--text-light); font-size: 14px; }
+
+/* Modal */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px);
+}
+.modal {
+  background: var(--white); border-radius: 16px; padding: 32px;
+  max-width: 560px; width: 90%; max-height: 85vh; overflow-y: auto;
+}
+.modalHeader {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;
+}
+.modalHeader h2 { font-size: 22px; color: var(--dark); }
+.modalSection { margin-bottom: 24px; }
+.modalSection h3 { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 10px; }
+.modalSection p { font-size: 14px; color: var(--text); margin-bottom: 2px; }
+.secondaryText { font-size: 13px; color: var(--text-light); }
+
+.itemsList { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.itemRow {
+  display: flex; justify-content: space-between; padding: 10px 14px;
+  font-size: 13px; border-bottom: 1px solid #f0f0f0;
+}
+.itemRow:last-child { border-bottom: none; }
+.itemPrice { font-weight: 600; }
+.totalRow {
+  display: flex; justify-content: space-between; padding: 12px 14px;
+  font-size: 14px; font-weight: 700; background: #f8f9fa; border-top: 1px solid var(--border);
+}
+
+.statusBtns { display: flex; gap: 6px; flex-wrap: wrap; }
+.statusChangeBtn {
+  padding: 8px 14px; border: 1px solid var(--border); background: var(--white);
+  border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+}
+.statusChangeBtn:hover { border-color: var(--primary); }
+.statusChangeBtnActive {
+  background: var(--primary); color: var(--white); border-color: var(--primary);
+}
+
+.closeBtn {
+  width: 100%; padding: 12px; background: var(--dark); color: var(--white);
+  border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.closeBtn:hover { opacity: 0.9; }

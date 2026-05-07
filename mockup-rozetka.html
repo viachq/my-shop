@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechBox — Rozetka Style Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #f5f5f7; color: #1d1d1f; line-height: 1.5; }
+a { text-decoration: none; color: inherit; }
+
+/* ── HEADER ──────────────────────────────────────── */
+.header {
+  background: #fff; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.header-row-1 {
+  max-width: 1320px; margin: 0 auto; padding: 0 24px;
+  display: flex; align-items: center; height: 64px; gap: 16px;
+}
+.logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.logo-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: linear-gradient(135deg, #6c5ce7, #00cec9);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 900; color: #fff;
+}
+.logo-text { font-size: 22px; font-weight: 900; color: #1d1d1f; letter-spacing: -0.5px; }
+.logo-text span { color: #6c5ce7; }
+
+.catalog-trigger {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 22px; border-radius: 10px; border: none;
+  background: #6c5ce7; color: #fff; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: inherit; flex-shrink: 0;
+  transition: background 0.2s;
+}
+.catalog-trigger:hover { background: #5a4bd1; }
+
+.search-bar { flex: 1; position: relative; max-width: 640px; }
+.search-bar input {
+  width: 100%; padding: 11px 48px 11px 18px;
+  border: 2px solid #e5e5ea; border-radius: 12px;
+  font-size: 14px; font-family: inherit; outline: none;
+  transition: border-color 0.2s;
+}
+.search-bar input::placeholder { color: #a0a0a8; }
+.search-bar input:focus { border-color: #6c5ce7; }
+.search-icon {
+  position: absolute; right: 4px; top: 4px; bottom: 4px;
+  width: 38px; border: none; border-radius: 8px;
+  background: #6c5ce7; color: #fff; font-size: 15px;
+  cursor: pointer; transition: background 0.2s;
+}
+.search-icon:hover { background: #5a4bd1; }
+
+.header-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.h-action {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 12px; border-radius: 10px; border: none;
+  background: none; cursor: pointer; position: relative;
+  transition: background 0.15s; font-family: inherit;
+}
+.h-action:hover { background: #f5f5f7; }
+.h-action-icon { font-size: 20px; color: #636366; }
+.h-action-label { font-size: 10px; color: #636366; font-weight: 600; }
+.h-badge {
+  position: absolute; top: 0; right: 6px;
+  background: #ff3b30; color: #fff; font-size: 10px; font-weight: 700;
+  min-width: 16px; height: 16px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 3px;
+}
+
+/* ── CATEGORY BAR ────────────────────────────────── */
+.cat-bar {
+  background: #fff; border-top: 1px solid #f0f0f2;
+}
+.cat-bar-inner {
+  max-width: 1320px; margin: 0 auto; padding: 0 24px;
+  display: flex; align-items: center; gap: 0; height: 44px;
+  overflow-x: auto;
+}
+.cat-bar-link {
+  padding: 10px 18px; font-size: 13px; font-weight: 600;
+  color: #636366; white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+.cat-bar-link:hover { color: #6c5ce7; }
+.cat-bar-link.active { color: #6c5ce7; border-bottom-color: #6c5ce7; }
+
+/* ── MAIN LAYOUT ─────────────────────────────────── */
+.page { max-width: 1320px; margin: 0 auto; padding: 20px 24px; }
+
+/* ── HERO ────────────────────────────────────────── */
+.hero {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin-bottom: 28px;
+}
+.hero-banner {
+  border-radius: 16px; overflow: hidden; position: relative;
+  padding: 40px 36px; min-height: 280px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.hero-banner-1 { background: linear-gradient(135deg, #6c5ce7 0%, #3d2b8a 100%); }
+.hero-banner-2 { background: linear-gradient(135deg, #00cec9 0%, #006d6a 100%); }
+.hero-tag {
+  display: inline-block; padding: 5px 12px; border-radius: 6px;
+  background: rgba(255,255,255,0.2); color: #fff;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  margin-bottom: 14px; width: fit-content;
+}
+.hero-banner h2 { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 10px; line-height: 1.2; }
+.hero-banner p { font-size: 14px; color: rgba(255,255,255,0.75); margin-bottom: 20px; max-width: 320px; }
+.hero-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 26px; border-radius: 10px; border: none;
+  background: #fff; color: #6c5ce7; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit; width: fit-content;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.hero-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+.hero-banner-2 .hero-btn { color: #00897b; }
+
+/* ── CATEGORY TILES ──────────────────────────────── */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.section-title { font-size: 20px; font-weight: 800; color: #1d1d1f; }
+.section-more { font-size: 13px; font-weight: 600; color: #6c5ce7; }
+.section-more:hover { text-decoration: underline; }
+
+.cat-tiles {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+  margin-bottom: 32px;
+}
+.cat-tile {
+  background: #fff; border-radius: 14px; padding: 22px 16px;
+  text-align: center; border: 1px solid #e5e5ea;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+.cat-tile:hover {
+  border-color: #6c5ce7; transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(108,92,231,0.1);
+}
+.cat-icon {
+  width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 12px;
+  background: #f5f5f7; display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.cat-tile:hover .cat-icon { background: rgba(108,92,231,0.08); }
+.cat-tile h4 { font-size: 13px; font-weight: 700; color: #1d1d1f; margin-bottom: 2px; }
+.cat-tile p { font-size: 11px; color: #8e8e93; }
+
+/* ── PRODUCT CARDS ───────────────────────────────── */
+.product-section { margin-bottom: 36px; }
+.product-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;
+}
+.product-card {
+  background: #fff; border-radius: 14px; border: 1px solid #e5e5ea;
+  overflow: hidden; display: flex; flex-direction: column;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+  border-color: #d0d0d5;
+}
+.card-img {
+  width: 100%; height: 180px; background: #f5f5f7;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 44px; position: relative;
+}
+.card-badge {
+  position: absolute; top: 10px; left: 10px;
+  padding: 3px 10px; border-radius: 6px;
+  font-size: 11px; font-weight: 700;
+}
+.badge-sale { background: #ff3b30; color: #fff; }
+.badge-new { background: #6c5ce7; color: #fff; }
+.badge-hit { background: #ff9500; color: #fff; }
+
+.card-body { padding: 14px 16px; flex: 1; display: flex; flex-direction: column; }
+.card-name {
+  font-size: 13px; font-weight: 600; color: #1d1d1f; margin-bottom: 8px;
+  line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.card-name:hover { color: #6c5ce7; }
+.card-rating { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.stars { color: #ff9500; font-size: 11px; letter-spacing: 1px; }
+.rating-count { font-size: 11px; color: #8e8e93; }
+
+.card-stock { font-size: 11px; margin-bottom: 10px; font-weight: 600; }
+.stock-ok { color: #34c759; }
+.stock-low { color: #ff3b30; }
+
+.card-price-row {
+  display: flex; align-items: baseline; gap: 8px; margin-top: auto; margin-bottom: 12px;
+}
+.card-price { font-size: 18px; font-weight: 800; color: #1d1d1f; }
+.card-old-price { font-size: 12px; color: #8e8e93; text-decoration: line-through; }
+
+.card-actions { display: flex; gap: 8px; }
+.card-buy {
+  flex: 1; padding: 10px; border: none; border-radius: 10px;
+  background: #6c5ce7; color: #fff; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  transition: background 0.2s;
+}
+.card-buy:hover { background: #5a4bd1; }
+.card-wish {
+  width: 40px; height: 40px; border-radius: 10px;
+  border: 1px solid #e5e5ea; background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer; color: #8e8e93;
+  transition: border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.card-wish:hover { border-color: #ff3b30; color: #ff3b30; }
+
+/* ── ADVANTAGES STRIP ────────────────────────────── */
+.advantages {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  margin-bottom: 36px;
+}
+.advantage {
+  background: #fff; border-radius: 14px; border: 1px solid #e5e5ea;
+  padding: 22px 20px; display: flex; align-items: center; gap: 14px;
+}
+.adv-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: rgba(108,92,231,0.08); color: #6c5ce7;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.advantage h4 { font-size: 13px; font-weight: 700; color: #1d1d1f; margin-bottom: 2px; }
+.advantage p { font-size: 11px; color: #8e8e93; }
+
+/* ── BRANDS ──────────────────────────────────────── */
+.brands-bar {
+  display: flex; align-items: center; gap: 0;
+  background: #fff; border-radius: 14px; border: 1px solid #e5e5ea;
+  margin-bottom: 36px; overflow: hidden;
+}
+.brand-item {
+  flex: 1; text-align: center; padding: 18px 12px;
+  font-size: 14px; font-weight: 700; color: #8e8e93;
+  border-right: 1px solid #f0f0f2;
+  transition: color 0.15s, background 0.15s;
+}
+.brand-item:last-child { border-right: none; }
+.brand-item:hover { color: #6c5ce7; background: rgba(108,92,231,0.03); }
+
+/* ── SIDEBAR CATALOG (demo view) ─────────────────── */
+.catalog-layout {
+  display: grid; grid-template-columns: 260px 1fr; gap: 20px;
+  margin-bottom: 36px;
+}
+.sidebar {
+  background: #fff; border-radius: 14px; border: 1px solid #e5e5ea;
+  padding: 8px 0; align-self: start; position: sticky; top: 120px;
+}
+.sidebar h3 {
+  font-size: 15px; font-weight: 800; color: #1d1d1f;
+  padding: 12px 20px 8px; border-bottom: 1px solid #f0f0f2;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px; font-size: 13px; font-weight: 500;
+  color: #636366; transition: background 0.12s, color 0.12s;
+}
+.sidebar-link:hover { background: #f5f5f7; color: #6c5ce7; }
+.sidebar-link.active { color: #6c5ce7; font-weight: 700; background: rgba(108,92,231,0.05); }
+.sidebar-icon { font-size: 16px; }
+.sidebar-count { margin-left: auto; font-size: 11px; color: #c7c7cc; font-weight: 600; }
+
+.catalog-content h2 {
+  font-size: 22px; font-weight: 800; color: #1d1d1f; margin-bottom: 16px;
+}
+.catalog-toolbar {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filter-chip {
+  padding: 7px 16px; border-radius: 8px; border: 1px solid #e5e5ea;
+  background: #fff; font-size: 12px; font-weight: 600; color: #636366;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.filter-chip:hover { border-color: #6c5ce7; color: #6c5ce7; }
+.filter-chip.active { background: #6c5ce7; color: #fff; border-color: #6c5ce7; }
+.sort-select {
+  margin-left: auto; padding: 7px 14px; border: 1px solid #e5e5ea;
+  border-radius: 8px; font-size: 12px; font-family: inherit; outline: none;
+  cursor: pointer; color: #636366;
+}
+.catalog-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+}
+
+/* ── PROMO STRIP ─────────────────────────────────── */
+.promo-strip {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;
+  margin-bottom: 36px;
+}
+.promo-card {
+  border-radius: 14px; padding: 28px 24px; position: relative; overflow: hidden;
+}
+.promo-1 { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+.promo-2 { background: linear-gradient(135deg, #00cec9, #81ecec); }
+.promo-3 { background: linear-gradient(135deg, #ff9500, #fdcb6e); }
+.promo-card h3 { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+.promo-card p { font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 14px; }
+.promo-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700; color: #fff;
+  padding: 6px 16px; border-radius: 8px;
+  background: rgba(255,255,255,0.2);
+  transition: background 0.15s;
+}
+.promo-link:hover { background: rgba(255,255,255,0.35); }
+
+/* ── FOOTER ──────────────────────────────────────── */
+.footer {
+  background: #fff; border-top: 1px solid #e5e5ea;
+  margin-top: 20px; padding: 40px 24px 20px;
+}
+.footer-inner {
+  max-width: 1320px; margin: 0 auto;
+  display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 36px;
+}
+.footer h4 {
+  font-size: 13px; font-weight: 800; color: #1d1d1f; margin-bottom: 14px;
+  text-transform: uppercase; letter-spacing: 0.3px;
+}
+.footer a, .footer p {
+  font-size: 13px; color: #8e8e93; display: block; margin-bottom: 8px;
+  transition: color 0.15s;
+}
+.footer a:hover { color: #6c5ce7; }
+.footer-brand p { line-height: 1.7; max-width: 280px; }
+.footer-bottom {
+  max-width: 1320px; margin: 28px auto 0; padding-top: 20px;
+  border-top: 1px solid #f0f0f2;
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: #c7c7cc;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-row-1">
+    <a href="#" class="logo">
+      <div class="logo-icon">TB</div>
+      <div class="logo-text">Tech<span>Box</span></div>
+    </a>
+    <button class="catalog-trigger">&#9776; Каталог</button>
+    <div class="search-bar">
+      <input type="text" placeholder="Я шукаю смартфон, ноутбук, навушники...">
+      <button class="search-icon">&#128269;</button>
+    </div>
+    <div class="header-actions">
+      <button class="h-action">
+        <span class="h-action-icon">&#128196;</span>
+        <span class="h-action-label">Замовлення</span>
+      </button>
+      <button class="h-action">
+        <span class="h-action-icon">&#9829;</span>
+        <span class="h-action-label">Обране</span>
+        <span class="h-badge">2</span>
+      </button>
+      <button class="h-action">
+        <span class="h-action-icon">&#128722;</span>
+        <span class="h-action-label">Кошик</span>
+        <span class="h-badge">3</span>
+      </button>
+      <button class="h-action">
+        <span class="h-action-icon">&#128100;</span>
+        <span class="h-action-label">Увійти</span>
+      </button>
+    </div>
+  </div>
+</header>
+<nav class="cat-bar">
+  <div class="cat-bar-inner">
+    <a href="#" class="cat-bar-link active">Акції</a>
+    <a href="#" class="cat-bar-link">Смартфони</a>
+    <a href="#" class="cat-bar-link">Ноутбуки</a>
+    <a href="#" class="cat-bar-link">Планшети</a>
+    <a href="#" class="cat-bar-link">Навушники</a>
+    <a href="#" class="cat-bar-link">Смарт-годинники</a>
+    <a href="#" class="cat-bar-link">Ігрові приставки</a>
+    <a href="#" class="cat-bar-link">Аксесуари</a>
+    <a href="#" class="cat-bar-link">Фото та відео</a>
+    <a href="#" class="cat-bar-link">Мережеве обладнання</a>
+  </div>
+</nav>
+
+<div class="page">
+
+<!-- HERO BANNERS -->
+<section class="hero">
+  <div class="hero-banner hero-banner-1">
+    <span class="hero-tag">&#9889; Новинка</span>
+    <h2>Samsung Galaxy S25 Ultra</h2>
+    <p>Титановий корпус, AI-камера 200 МП та найпотужніший Snapdragon</p>
+    <button class="hero-btn">Дивитись &#8594;</button>
+  </div>
+  <div class="hero-banner hero-banner-2">
+    <span class="hero-tag">&#127873; Trade-In</span>
+    <h2>Здай старий — отримай знижку</h2>
+    <p>До 8 000 &#8372; знижки на новий пристрій при обміні старого</p>
+    <button class="hero-btn">Детальніше &#8594;</button>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section style="margin-bottom:32px;">
+  <div class="section-header">
+    <h2 class="section-title">Категорії</h2>
+    <a href="#" class="section-more">Всі категорії &#8594;</a>
+  </div>
+  <div class="cat-tiles">
+    <div class="cat-tile">
+      <div class="cat-icon">&#128241;</div>
+      <h4>Смартфони</h4>
+      <p>245 товарів</p>
+    </div>
+    <div class="cat-tile">
+      <div class="cat-icon">&#128187;</div>
+      <h4>Ноутбуки</h4>
+      <p>128 товарів</p>
+    </div>
+    <div class="cat-tile">
+      <div class="cat-icon">&#127911;</div>
+      <h4>Навушники</h4>
+      <p>196 товарів</p>
+    </div>
+    <div class="cat-tile">
+      <div class="cat-icon">&#9201;</div>
+      <h4>Годинники</h4>
+      <p>84 товари</p>
+    </div>
+    <div class="cat-tile">
+      <div class="cat-icon">&#127918;</div>
+      <h4>Приставки</h4>
+      <p>52 товари</p>
+    </div>
+    <div class="cat-tile">
+      <div class="cat-icon">&#128247;</div>
+      <h4>Фото/Відео</h4>
+      <p>73 товари</p>
+    </div>
+  </div>
+</section>
+
+<!-- PROMO STRIP -->
+<div class="promo-strip">
+  <div class="promo-card promo-1">
+    <h3>&#9889; Розпродаж аксесуарів</h3>
+    <p>Знижки до 40% на чохли та кабелі</p>
+    <a href="#" class="promo-link">Переглянути &#8594;</a>
+  </div>
+  <div class="promo-card promo-2">
+    <h3>&#128666; Безкоштовна доставка</h3>
+    <p>На замовлення від 2 000 &#8372;</p>
+    <a href="#" class="promo-link">Умови &#8594;</a>
+  </div>
+  <div class="promo-card promo-3">
+    <h3>&#128179; Оплата частинами</h3>
+    <p>0% до 6 місяців на все</p>
+    <a href="#" class="promo-link">Дізнатись &#8594;</a>
+  </div>
+</div>
+
+<!-- POPULAR PRODUCTS -->
+<section class="product-section">
+  <div class="section-header">
+    <h2 class="section-title">Популярні товари</h2>
+    <a href="#" class="section-more">Дивитись все &#8594;</a>
+  </div>
+  <div class="product-grid">
+    <div class="product-card">
+      <div class="card-img">
+        <span class="card-badge badge-hit">HIT</span>
+        &#128241;
+      </div>
+      <div class="card-body">
+        <div class="card-name">iPhone 16 Pro Max 256GB Titanium</div>
+        <div class="card-rating">
+          <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+          <span class="rating-count">(142)</span>
+        </div>
+        <div class="card-stock stock-ok">&#10003; Є в наявності</div>
+        <div class="card-price-row">
+          <span class="card-price">54 999 &#8372;</span>
+          <span class="card-old-price">59 999 &#8372;</span>
+        </div>
+        <div class="card-actions">
+          <button class="card-buy">Купити</button>
+          <button class="card-wish">&#9829;</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="card-img">
+        <span class="card-badge badge-sale">-25%</span>
+        &#128187;
+      </div>
+      <div class="card-body">
+        <div class="card-name">MacBook Air M3 15" 16/512GB Midnight</div>
+        <div class="card-rating">
+          <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+          <span class="rating-count">(87)</span>
+        </div>
+        <div class="card-stock stock-ok">&#10003; Є в наявності</div>
+        <div class="card-price-row">
+          <span class="card-price">52 499 &#8372;</span>
+          <span class="card-old-price">69 999 &#8372;</span>
+        </div>
+        <div class="card-actions">
+          <button class="card-buy">Купити</button>
+          <button class="card-wish">&#9829;</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="card-img">
+        <span class="card-badge badge-new">NEW</span>
+        &#127911;
+      </div>
+      <div class="card-body">
+        <div class="card-name">Sony WH-1000XM5 Black</div>
+        <div class="card-rating">
+          <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+          <span class="rating-count">(256)</span>
+        </div>
+        <div class="card-stock stock-ok">&#10003; Є в наявності</div>
+        <div class="card-price-row">
+          <span class="card-price">11 999 &#8372;</span>
+        </div>
+        <div class="card-actions">
+          <button class="card-buy">Купити</button>
+          <button class="card-wish">&#9829;</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="card-img">&#9201;</div>
+      <div class="card-body">
+        <div class="card-name">Apple Watch Series 10 GPS 46mm</div>
+        <div class="card-rating">
+          <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+          <span class="rating-count">(64)</span>
+        </div>
+        <div class="card-stock stock-ok">&#10003; Є в наявності</div>
+        <div class="card-price-row">
+          <span class="card-price">16 499 &#8372;</span>
+        </div>
+        <div class="card-actions">
+          <button class="card-buy">Купити</button>
+          <button class="card-wish">&#9829;</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="card-img">
+        <span class="card-badge badge-sale">-15%</span>
+        &#127918;
+      </div>
+      <div class="card-body">
+        <div class="card-name">PlayStation 5 Pro 2TB White</div>
+        <div class="card-rating">
+          <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+          <span class="rating-count">(92)</span>
+        </div>
+        <div class="card-stock stock-low">&#9888; Закінчується</div>
+        <div class="card-price-row">
+          <span class="card-price">29 999 &#8372;</span>
+          <span class="card-old-price">34 999 &#8372;</span>
+        </div>
+        <div class="card-actions">
+          <button class="card-buy">Купити</button>
+          <button class="card-wish">&#9829;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ADVANTAGES -->
+<div class="advantages">
+  <div class="advantage">
+    <div class="adv-icon">&#128666;</div>
+    <div>
+      <h4>Безкоштовна доставка</h4>
+      <p>При замовленні від 2000 &#8372;</p>
+    </div>
+  </div>
+  <div class="advantage">
+    <div class="adv-icon">&#128274;</div>
+    <div>
+      <h4>Гарантія якості</h4>
+      <p>Офіційна гарантія виробника</p>
+    </div>
+  </div>
+  <div class="advantage">
+    <div class="adv-icon">&#128257;</div>
+    <div>
+      <h4>14 днів на повернення</h4>
+      <p>Легке повернення без питань</p>
+    </div>
+  </div>
+  <div class="advantage">
+    <div class="adv-icon">&#128179;</div>
+    <div>
+      <h4>Оплата частинами</h4>
+      <p>0% на 3-6 місяців</p>
+    </div>
+  </div>
+</div>
+
+<!-- CATALOG DEMO WITH SIDEBAR -->
+<section class="catalog-layout">
+  <aside class="sidebar">
+    <h3>Каталог</h3>
+    <a href="#" class="sidebar-link active">
+      <span class="sidebar-icon">&#128241;</span> Смартфони <span class="sidebar-count">245</span>
+    </a>
+    <a href="#" class="sidebar-link">
+      <span class="sidebar-icon">&#128187;</span> Ноутбуки <span class="sidebar-count">128</span>
+    </a>
+    <a href="#" class="sidebar-link">
+      <span class="sidebar-icon">&#127911;</span> Навушники <span class="sidebar-count">196</span>
+    </a>
+    <a href="#" class="sidebar-link">
+      <span class="sidebar-icon">&#9201;</span> Смарт-годинники <span class="sidebar-count">84</span>
+    </a>
+    <a href="#" class="sidebar-link">
+      <span class="sidebar-icon">&#127918;</span> Ігрові приставки <span class="sidebar-count">52</span>
+    </a>
+    <a href="#" class="sidebar-link">
+      <span class="sidebar-icon">&#128247;</span> Фото та відео <span class="sidebar-count">73</span>
+    </a>
+    <a href="#" class="sidebar-link">
+      <span class="sidebar-icon">&#128268;</span> Аксесуари <span class="sidebar-count">312</span>
+    </a>
+    <a href="#" class="sidebar-link">
+      <span class="sidebar-icon">&#128225;</span> Акустика <span class="sidebar-count">89</span>
+    </a>
+    <a href="#" class="sidebar-link">
+      <span class="sidebar-icon">&#128421;</span> Мережеве обладн. <span class="sidebar-count">47</span>
+    </a>
+  </aside>
+  <div class="catalog-content">
+    <h2>Смартфони</h2>
+    <div class="catalog-toolbar">
+      <button class="filter-chip active">Всі</button>
+      <button class="filter-chip">Apple</button>
+      <button class="filter-chip">Samsung</button>
+      <button class="filter-chip">Xiaomi</button>
+      <button class="filter-chip">Huawei</button>
+      <select class="sort-select">
+        <option>Сортувати: За популярністю</option>
+        <option>Від дешевих</option>
+        <option>Від дорогих</option>
+        <option>Новинки</option>
+      </select>
+    </div>
+    <div class="catalog-grid">
+      <div class="product-card">
+        <div class="card-img"><span class="card-badge badge-hit">HIT</span>&#128241;</div>
+        <div class="card-body">
+          <div class="card-name">iPhone 16 Pro 128GB Black</div>
+          <div class="card-rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-count">(98)</span></div>
+          <div class="card-stock stock-ok">&#10003; Є в наявності</div>
+          <div class="card-price-row"><span class="card-price">47 999 &#8372;</span></div>
+          <div class="card-actions"><button class="card-buy">Купити</button><button class="card-wish">&#9829;</button></div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="card-img"><span class="card-badge badge-sale">-20%</span>&#128241;</div>
+        <div class="card-body">
+          <div class="card-name">Samsung Galaxy S24 FE 256GB</div>
+          <div class="card-rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-count">(54)</span></div>
+          <div class="card-stock stock-ok">&#10003; Є в наявності</div>
+          <div class="card-price-row"><span class="card-price">18 999 &#8372;</span><span class="card-old-price">23 999 &#8372;</span></div>
+          <div class="card-actions"><button class="card-buy">Купити</button><button class="card-wish">&#9829;</button></div>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="card-img"><span class="card-badge badge-new">NEW</span>&#128241;</div>
+        <div class="card-body">
+          <div class="card-name">Xiaomi 15 Ultra 512GB</div>
+          <div class="card-rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-count">(12)</span></div>
+          <div class="card-stock stock-low">&#9888; Закінчується</div>
+          <div class="card-price-row"><span class="card-price">32 999 &#8372;</span></div>
+          <div class="card-actions"><button class="card-buy">Купити</button><button class="card-wish">&#9829;</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BRANDS -->
+<div class="brands-bar">
+  <div class="brand-item">Apple</div>
+  <div class="brand-item">Samsung</div>
+  <div class="brand-item">Xiaomi</div>
+  <div class="brand-item">Sony</div>
+  <div class="brand-item">Huawei</div>
+  <div class="brand-item">Lenovo</div>
+  <div class="brand-item">JBL</div>
+  <div class="brand-item">Asus</div>
+</div>
+
+<!-- NEW ARRIVALS -->
+<section class="product-section">
+  <div class="section-header">
+    <h2 class="section-title">Новинки</h2>
+    <a href="#" class="section-more">Дивитись все &#8594;</a>
+  </div>
+  <div class="product-grid">
+    <div class="product-card">
+      <div class="card-img"><span class="card-badge badge-new">NEW</span>&#128241;</div>
+      <div class="card-body">
+        <div class="card-name">Samsung Galaxy S25 Ultra 512GB</div>
+        <div class="card-rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-count">(34)</span></div>
+        <div class="card-stock stock-ok">&#10003; Є в наявності</div>
+        <div class="card-price-row"><span class="card-price">57 999 &#8372;</span></div>
+        <div class="card-actions"><button class="card-buy">Купити</button><button class="card-wish">&#9829;</button></div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="card-img"><span class="card-badge badge-new">NEW</span>&#128187;</div>
+      <div class="card-body">
+        <div class="card-name">iPad Pro M4 13" Wi-Fi 256GB</div>
+        <div class="card-rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-count">(18)</span></div>
+        <div class="card-stock stock-ok">&#10003; Є в наявності</div>
+        <div class="card-price-row"><span class="card-price">52 999 &#8372;</span></div>
+        <div class="card-actions"><button class="card-buy">Купити</button><button class="card-wish">&#9829;</button></div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="card-img">&#127911;</div>
+      <div class="card-body">
+        <div class="card-name">AirPods Pro 3 з USB-C</div>
+        <div class="card-rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-count">(76)</span></div>
+        <div class="card-stock stock-ok">&#10003; Є в наявності</div>
+        <div class="card-price-row"><span class="card-price">10 999 &#8372;</span></div>
+        <div class="card-actions"><button class="card-buy">Купити</button><button class="card-wish">&#9829;</button></div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="card-img"><span class="card-badge badge-new">NEW</span>&#128247;</div>
+      <div class="card-body">
+        <div class="card-name">GoPro Hero 13 Black</div>
+        <div class="card-rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span><span class="rating-count">(41)</span></div>
+        <div class="card-stock stock-ok">&#10003; Є в наявності</div>
+        <div class="card-price-row"><span class="card-price">19 999 &#8372;</span></div>
+        <div class="card-actions"><button class="card-buy">Купити</button><button class="card-wish">&#9829;</button></div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="card-img">&#128225;</div>
+      <div class="card-body">
+        <div class="card-name">JBL Charge 6 Bluetooth</div>
+        <div class="card-rating"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="rating-count">(128)</span></div>
+        <div class="card-stock stock-ok">&#10003; Є в наявності</div>
+        <div class="card-price-row"><span class="card-price">6 499 &#8372;</span></div>
+        <div class="card-actions"><button class="card-buy">Купити</button><button class="card-wish">&#9829;</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- .page -->
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo" style="margin-bottom:14px;">
+        <div class="logo-icon">TB</div>
+        <div class="logo-text">Tech<span>Box</span></div>
+      </div>
+      <p>TechBox — ваш надійний магазин електроніки та гаджетів. Працюємо з 2020 року, доставляємо по всій Україні.</p>
+    </div>
+    <div>
+      <h4>Покупцям</h4>
+      <a href="#">Доставка та оплата</a>
+      <a href="#">Гарантія та повернення</a>
+      <a href="#">Програма лояльності</a>
+      <a href="#">Trade-In</a>
+    </div>
+    <div>
+      <h4>Каталог</h4>
+      <a href="#">Смартфони</a>
+      <a href="#">Ноутбуки</a>
+      <a href="#">Навушники</a>
+      <a href="#">Аксесуари</a>
+    </div>
+    <div>
+      <h4>Контакти</h4>
+      <a href="#">+380 (44) 123-45-67</a>
+      <a href="#">info@techbox.ua</a>
+      <a href="#">Київ, вул. Хрещатик, 22</a>
+      <p style="margin-top:8px;">Пн-Нд: 09:00 — 21:00</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2025 TechBox. Всі права захищені.</span>
+    <span>Розробка: Дипломний проєкт</span>
+  </div>
+</footer>
+
+</body>
+</html>

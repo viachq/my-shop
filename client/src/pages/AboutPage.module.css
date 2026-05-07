@@ -1,0 +1,218 @@
+.page {
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+.hero {
+  position: relative;
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--fg);
+  overflow: hidden;
+  background: var(--bg-elevated);
+}
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-elevated);
+}
+.heroContent {
+  position: relative;
+  z-index: 2;
+}
+.heroContent h1 {
+  font-size: 36px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  color: var(--fg);
+}
+.heroContent p {
+  font-size: 16px;
+  color: var(--text);
+  max-width: 600px;
+}
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  transition: color .2s;
+}
+.backLink:hover { color: var(--fg); }
+
+.content {
+  padding: 50px 0;
+}
+.section {
+  margin-bottom: 50px;
+}
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--fg);
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+.sectionTitle svg { color: var(--text); font-size: 24px; }
+
+.aboutGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+.aboutText {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text);
+}
+.aboutText p { margin-bottom: 16px; }
+.aboutImg {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 50px;
+}
+.feature {
+  text-align: center;
+  padding: 28px 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.featureIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin: 0 auto 16px;
+}
+.feature h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 8px;
+}
+.feature p {
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+.deliveryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.deliveryCard {
+  padding: 28px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--red);
+}
+.deliveryCard h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.deliveryCard h4 svg { color: var(--text); }
+.deliveryCard p, .deliveryCard li {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.8;
+}
+.deliveryCard ul {
+  padding-left: 18px;
+  list-style: disc;
+}
+
+.contactGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.contactCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  transition: border-color .2s;
+}
+.contactCard:hover { border-color: var(--border-mid); }
+.contactIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.contactCard h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 4px;
+}
+.contactCard p {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.map {
+  margin-top: 40px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  height: 300px;
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  font-size: 14px;
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 768px) {
+  .aboutGrid, .deliveryGrid, .contactGrid { grid-template-columns: 1fr; }
+  .features { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .features { grid-template-columns: 1fr; }
+}

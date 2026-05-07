@@ -1,0 +1,5 @@
+Розроблення web-орієнтованої системи підтримки продажів малого
+бізнесу з функціями обліку товарів, замовлень та клієнтської бази
+
+Development of a web-based system for small business sales support with
+functions for managing inventory, orders, and customer database

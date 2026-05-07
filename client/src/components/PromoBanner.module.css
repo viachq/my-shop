@@ -1,0 +1,113 @@
+.section {
+  padding: 32px 0;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 16px;
+  min-height: 200px;
+}
+
+.card {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: 24px;
+  background: var(--bg-card);
+}
+.cardBg {
+  display: none;
+}
+.cardContent {
+  position: relative;
+  z-index: 2;
+}
+.icon {
+  font-size: 20px;
+  color: var(--red);
+  margin-bottom: 12px;
+}
+.cardContent h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--fg);
+  margin-bottom: 6px;
+}
+.cardContent p {
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+  transition: color .2s;
+}
+.link:hover { color: var(--fg); }
+
+.cardWide {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.wideBg {
+  position: absolute;
+  inset: 0;
+  background: url('https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=1600') center/cover;
+  filter: brightness(0.15) saturate(1.2);
+}
+.wideContent {
+  position: relative;
+  z-index: 2;
+  padding: 40px;
+}
+.wideIcon {
+  display: none;
+}
+.wideContent h2 {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--fg);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.wideContent h2 span {
+  color: var(--fg);
+}
+.wideContent p {
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 28px;
+  background: var(--red);
+  color: #fff;
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background .2s;
+}
+.btn:hover {
+  background: var(--primary-dark);
+}
+
+@media (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; }
+  .card { min-height: 160px; }
+  .cardWide { min-height: 180px; }
+}

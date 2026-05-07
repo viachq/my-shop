@@ -1,0 +1,279 @@
+.page {
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+
+.hero {
+  position: relative;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--fg);
+  overflow: hidden;
+  background: var(--bg-elevated);
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-elevated);
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+}
+
+.heroContent h1 {
+  font-size: 32px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  color: var(--fg);
+}
+
+.heroContent p {
+  font-size: 15px;
+  color: var(--text);
+}
+
+/* CONTENT */
+.content {
+  padding: 36px 0;
+}
+
+/* AUTH MESSAGE */
+.authMessage {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.authMessage p {
+  font-size: 16px;
+  color: var(--text-light);
+  margin-bottom: 20px;
+}
+
+.authLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: var(--red);
+  color: #fff;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 700;
+  transition: opacity 0.2s;
+}
+
+.authLink:hover {
+  opacity: 0.85;
+}
+
+/* EMPTY STATE */
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  color: var(--text-light);
+  margin-bottom: 16px;
+}
+
+.emptyState p {
+  font-size: 16px;
+  color: var(--text-light);
+  margin-bottom: 20px;
+}
+
+.catalogLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: var(--red);
+  color: #fff;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 700;
+  transition: opacity 0.2s;
+}
+
+.catalogLink:hover {
+  opacity: 0.85;
+}
+
+/* ORDER CARDS */
+.orderList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.orderCard {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.orderCard:hover {
+  border-color: var(--border-mid);
+}
+
+.orderHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  cursor: pointer;
+  user-select: none;
+  gap: 16px;
+}
+
+.orderHeader:hover {
+  background: var(--bg-elevated);
+}
+
+.orderInfo {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.orderId {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.orderDate {
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.orderRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.orderTotal {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fg);
+  white-space: nowrap;
+}
+
+/* STATUS BADGE */
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badgeNew {
+  background: rgba(21,101,192,0.15);
+  color: #64b5f6;
+}
+
+.badgeProcessing {
+  background: rgba(230,81,0,0.15);
+  color: #ffb74d;
+}
+
+.badgeShipped {
+  background: rgba(123,31,162,0.15);
+  color: #ce93d8;
+}
+
+.badgeDelivered {
+  background: rgba(46,204,113,0.15);
+  color: var(--green);
+}
+
+.badgeCancelled {
+  background: rgba(196,42,44,0.1);
+  color: var(--red);
+}
+
+/* EXPAND ICON */
+.expandIcon {
+  font-size: 12px;
+  color: var(--text-light);
+  transition: transform 0.25s;
+  flex-shrink: 0;
+}
+
+.expandIconOpen {
+  transform: rotate(180deg);
+}
+
+/* ORDER ITEMS (EXPANDED) */
+.orderItems {
+  padding: 0 24px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.itemRow:last-child {
+  border-bottom: none;
+}
+
+.itemName {
+  font-size: 14px;
+  color: var(--fg);
+  font-weight: 500;
+}
+
+.itemQty {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-left: 12px;
+}
+
+.itemPrice {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  .orderHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 16px;
+  }
+
+  .orderRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .orderInfo {
+    gap: 10px;
+  }
+
+  .orderItems {
+    padding: 0 16px 16px;
+  }
+}

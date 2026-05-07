@@ -1,0 +1,211 @@
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  background: var(--dark);
+  color: #ccc;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.logo {
+  padding: 24px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--white);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.logoIcon {
+  width: 36px;
+  height: 36px;
+  background: var(--primary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-size: 16px;
+}
+.badge {
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--primary);
+  color: var(--white);
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+  text-transform: uppercase;
+}
+.nav {
+  padding: 16px 0;
+  flex: 1;
+}
+.navSection {
+  padding: 0 12px;
+  margin-bottom: 8px;
+}
+.navLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #555;
+  padding: 8px 12px 6px;
+}
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #999;
+  transition: all .15s;
+  cursor: pointer;
+  text-decoration: none;
+}
+.navLink:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--white);
+}
+.navLink svg { font-size: 15px; }
+.navActive {
+  background: rgba(108,92,231,0.12);
+  color: var(--primary);
+}
+.navActive:hover {
+  background: rgba(108,92,231,0.18);
+  color: var(--primary);
+}
+/* USER INFO IN SIDEBAR FOOTER */
+.sidebarUserInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.sidebarUserIcon {
+  font-size: 28px;
+  color: #666;
+  flex-shrink: 0;
+}
+.sidebarUserDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.sidebarUserName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebarUserRole {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 8px;
+  width: fit-content;
+}
+.sidebarUserRoleAdmin {
+  background: rgba(220, 53, 69, 0.2);
+  color: #f87171;
+}
+.sidebarUserRoleManager {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+.sidebarUserRoleWarehouse {
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
+/* ROLE BADGE VARIANTS */
+.badgeManager {
+  background: #f59e0b;
+}
+.badgeWarehouse {
+  background: #8b5cf6;
+}
+
+.sidebarFooter {
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.backLink {
+  padding: 14px 20px 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #666;
+  text-decoration: none;
+  transition: color .15s;
+}
+.backLink:hover { color: var(--primary); }
+.logoutBtn {
+  padding: 6px 20px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #666;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color .15s;
+}
+.logoutBtn:hover { color: #dc3545; }
+
+/* MAIN */
+.main {
+  background: #f0f2f5;
+  overflow-y: auto;
+}
+.topBar {
+  background: var(--white);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.topBarTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--dark);
+}
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-light);
+}
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+.content {
+  padding: 28px 32px;
+}

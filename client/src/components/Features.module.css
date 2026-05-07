@@ -1,0 +1,35 @@
+.strip {
+  background: var(--bg-card);
+  padding: 20px 0;
+}
+.track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.icon {
+  font-size: 16px;
+  color: var(--text-light);
+  flex-shrink: 0;
+}
+.text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+@media (max-width: 900px) {
+  .track {
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 24px;
+  }
+  .track::-webkit-scrollbar { display: none; }
+}

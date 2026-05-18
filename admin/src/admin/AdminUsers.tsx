@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { FaSearch, FaEdit, FaTrash, FaShieldAlt, FaUsers, FaUserTie, FaUserCog, FaUserFriends, FaUserSlash } from 'react-icons/fa';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { FaSearch, FaChevronDown, FaShieldAlt, FaUsers, FaUserTie, FaShoppingCart, FaUserSlash, FaCalendarPlus } from 'react-icons/fa';
 import { getAdminRole } from './AdminAuth';
 import styles from './AdminUsers.module.css';
 
 const API_BASE = '/api';
 
-type Role = 'superadmin' | 'admin' | 'manager' | 'warehouse' | 'customer';
+type Role = 'superadmin' | 'admin' | 'manager' | 'customer';
 
 interface UserOut {
   id: number;
@@ -13,14 +13,15 @@ interface UserOut {
   email: string;
   phone: string | null;
   role: Role;
+  order_count: number;
+  total_spent: number;
   created_at: string;
 }
 
-const roleLabels: Record<Role, string> = {
+const roleLabels: Record<string, string> = {
   superadmin: 'Суперадмін',
   admin: 'Адміністратор',
   manager: 'Менеджер',
-  warehouse: 'Комірник',
   customer: 'Покупець',
 };
 
@@ -29,18 +30,8 @@ const tabLabels: Record<string, string> = {
   superadmin: 'Суперадмін',
   admin: 'Адмін',
   manager: 'Менеджер',
-  warehouse: 'Склад',
   customer: 'Клієнти',
 };
-
-const AVATAR_COLORS = [
-  '#14b8a6', '#0891b2', '#6366f1', '#8b5cf6', '#ec4899',
-  '#f43f5e', '#f97316', '#eab308', '#84cc16', '#10b981',
-];
-
-function avatarColor(id: number): string {
-  return AVATAR_COLORS[id % AVATAR_COLORS.length];
-}
 
 function authHeaders(): HeadersInit {
   const token = localStorage.getItem('adminToken');
@@ -50,19 +41,15 @@ function authHeaders(): HeadersInit {
   };
 }
 
-function canEditUser(myRole: string, targetRole: Role): boolean {
+function canChangeRole(myRole: string, targetRole: Role): boolean {
   if (targetRole === 'superadmin') return false;
   if (targetRole === 'admin' && myRole !== 'superadmin') return false;
   return true;
 }
 
-function canDeleteUser(myRole: string, targetRole: Role): boolean {
-  return canEditUser(myRole, targetRole);
-}
-
 function getAllowedRoles(myRole: string): Role[] {
-  if (myRole === 'superadmin') return ['admin', 'manager', 'warehouse', 'customer'];
-  return ['manager', 'warehouse', 'customer'];
+  if (myRole === 'superadmin') return ['admin', 'manager', 'customer'];
+  return ['manager', 'customer'];
 }
 
 function formatDate(iso: string): string {
@@ -73,6 +60,11 @@ function formatDate(iso: string): string {
   return `${day}.${month}.${year}`;
 }
 
+function formatMoney(v: number | string): string {
+  const n = typeof v === 'string' ? parseFloat(v) : v;
+  return Math.round(n).toLocaleString('uk-UA');
+}
+
 export default function AdminUsers() {
   const myRole = getAdminRole() || 'admin';
   const [users, setUsers] = useState<UserOut[]>([]);
@@ -80,7 +72,7 @@ export default function AdminUsers() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [editing, setEditing] = useState<UserOut | null>(null);
+  const [roleDropdownId, setRoleDropdownId] = useState<number | null>(null);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -107,48 +99,36 @@ export default function AdminUsers() {
     return true;
   });
 
-  const handleDelete = async (id: number) => {
-    const target = users.find(u => u.id === id);
-    if (!target || !canDeleteUser(myRole, target.role)) return;
-    if (!confirm('Видалити цього користувача?')) return;
+  const changeRole = async (userId: number, newRole: Role) => {
     try {
-      const res = await fetch(`${API_BASE}/users/${id}`, {
-        method: 'DELETE',
+      const res = await fetch(`${API_BASE}/users/${userId}`, {
+        method: 'PUT',
         headers: authHeaders(),
+        body: JSON.stringify({ role: newRole }),
       });
-      if (!res.ok) throw new Error(`Помилка видалення: ${res.status}`);
+      if (!res.ok) throw new Error(`Помилка: ${res.status}`);
       await fetchUsers();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Помилка видалення');
+      console.error(err);
     }
+    setRoleDropdownId(null);
   };
 
-  const handleSaved = async () => {
-    setEditing(null);
-    await fetchUsers();
-  };
-
-  if (editing) {
-    return (
-      <UserForm
-        user={editing}
-        myRole={myRole}
-        onSave={handleSaved}
-        onCancel={() => setEditing(null)}
-      />
-    );
-  }
-
-  const roleCounts = {
+  const roleCounts = useMemo(() => ({
     all: users.length,
     superadmin: users.filter(u => u.role === 'superadmin').length,
     admin: users.filter(u => u.role === 'admin').length,
     manager: users.filter(u => u.role === 'manager').length,
-    warehouse: users.filter(u => u.role === 'warehouse').length,
     customer: users.filter(u => u.role === 'customer').length,
-  };
+  }), [users]);
 
-  const adminTotal = roleCounts.superadmin + roleCounts.admin;
+  const totalOrders = useMemo(() => users.reduce((s, u) => s + u.order_count, 0), [users]);
+
+  const newThisMonth = useMemo(() => {
+    const now = new Date();
+    const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    return users.filter(u => new Date(u.created_at) >= monthAgo).length;
+  }, [users]);
 
   return (
     <>
@@ -162,15 +142,13 @@ export default function AdminUsers() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <div className={styles.roleTabs}>
+        <div className={styles.filterGroup}>
           {Object.entries(tabLabels).map(([key, label]) => (
             <button
               key={key}
-              className={`${styles.roleTab} ${roleFilter === key ? styles.tabActive : ''}`}
+              className={`${styles.filterBtn} ${roleFilter === key ? styles.filterActive : ''}`}
               onClick={() => setRoleFilter(key)}
-            >
-              {label} <span className={styles.tabCount}>{roleCounts[key as keyof typeof roleCounts]}</span>
-            </button>
+            >{label}</button>
           ))}
         </div>
         <span className={styles.topBarCount}>Знайдено: <strong>{filtered.length}</strong></span>
@@ -186,32 +164,35 @@ export default function AdminUsers() {
         ) : (
           <>
             <div className={styles.statsStrip}>
-              <StatCard
-                icon={<FaUsers />}
-                label="Всього користувачів"
-                value={roleCounts.all}
-                tone="teal"
-              />
-              <StatCard
-                icon={<FaUserTie />}
-                label="Адміністратори"
-                value={adminTotal}
-                tone="red"
-              />
-              <StatCard
-                icon={<FaUserCog />}
-                label="Менеджери"
-                value={roleCounts.manager}
-                tone="orange"
-              />
-              <StatCard
-                icon={<FaUserFriends />}
-                label="Покупці"
-                value={roleCounts.customer}
-                tone="green"
-              />
+              <div className={styles.statCard}>
+                <div className={`${styles.statIcon} ${styles.tone_teal}`}><FaUsers /></div>
+                <div className={styles.statBody}>
+                  <div className={styles.statValue}>{roleCounts.all}</div>
+                  <div className={styles.statLabel}>Всього користувачів</div>
+                </div>
+              </div>
+              <div className={styles.statCard}>
+                <div className={`${styles.statIcon} ${styles.tone_red}`}><FaUserTie /></div>
+                <div className={styles.statBody}>
+                  <div className={styles.statValue}>{roleCounts.superadmin + roleCounts.admin}</div>
+                  <div className={styles.statLabel}>Адміністратори</div>
+                </div>
+              </div>
+              <div className={styles.statCard}>
+                <div className={`${styles.statIcon} ${styles.tone_orange}`}><FaShoppingCart /></div>
+                <div className={styles.statBody}>
+                  <div className={styles.statValue}>{totalOrders}</div>
+                  <div className={styles.statLabel}>Замовлень</div>
+                </div>
+              </div>
+              <div className={styles.statCard}>
+                <div className={`${styles.statIcon} ${styles.tone_green}`}><FaCalendarPlus /></div>
+                <div className={styles.statBody}>
+                  <div className={styles.statValue}>{newThisMonth}</div>
+                  <div className={styles.statLabel}>Нових за місяць</div>
+                </div>
+              </div>
             </div>
-
 
             <div className={styles.tableWrap}>
               <table className={styles.table}>
@@ -220,51 +201,25 @@ export default function AdminUsers() {
                     <th>Користувач</th>
                     <th>Телефон</th>
                     <th>Роль</th>
+                    <th>Замовлень</th>
+                    <th>Сума</th>
                     <th>Реєстрація</th>
-                    <th className={styles.actionsCol}>Дії</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map(u => (
-                    <tr key={u.id}>
-                      <td>
-                        <div className={styles.userCell}>
-                          <div
-                            className={`${styles.avatar} ${u.role === 'superadmin' ? styles.avatarSuper : ''}`}
-                            style={u.role === 'superadmin' ? undefined : { background: avatarColor(u.id) }}
-                          >
-                            {u.role === 'superadmin' ? <FaShieldAlt /> : u.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div className={styles.userInfo}>
-                            <span className={styles.userName}>{u.name}</span>
-                            <span className={styles.userEmail}>{u.email}</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td>{u.phone || <span className={styles.muted}>—</span>}</td>
-                      <td><span className={`${styles.role} ${styles[`role_${u.role}`]}`}>{roleLabels[u.role]}</span></td>
-                      <td className={styles.dateCell}>{formatDate(u.created_at)}</td>
-                      <td>
-                        <div className={styles.actions}>
-                          {canEditUser(myRole, u.role) ? (
-                            <>
-                              <button className={styles.actionBtn} title="Редагувати" onClick={() => setEditing(u)}>
-                                <FaEdit />
-                              </button>
-                              <button className={`${styles.actionBtn} ${styles.deleteBtn}`} title="Видалити" onClick={() => handleDelete(u.id)}>
-                                <FaTrash />
-                              </button>
-                            </>
-                          ) : (
-                            <span className={styles.protected}><FaShieldAlt /> Захищено</span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
+                    <UserRow
+                      key={u.id}
+                      user={u}
+                      myRole={myRole}
+                      isDropdownOpen={roleDropdownId === u.id}
+                      onToggleDropdown={() => setRoleDropdownId(roleDropdownId === u.id ? null : u.id)}
+                      onChangeRole={r => changeRole(u.id, r)}
+                    />
                   ))}
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={5}>
+                      <td colSpan={6}>
                         <div className={styles.empty}>
                           <FaUserSlash className={styles.emptyIcon} />
                           <p className={styles.emptyTitle}>Користувачів не знайдено</p>
@@ -283,20 +238,72 @@ export default function AdminUsers() {
   );
 }
 
-function StatCard({ icon, label, value, tone }: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  tone: 'teal' | 'red' | 'orange' | 'green' | 'blue' | 'purple';
+function UserRow({ user, myRole, isDropdownOpen, onToggleDropdown, onChangeRole }: {
+  user: UserOut;
+  myRole: string;
+  isDropdownOpen: boolean;
+  onToggleDropdown: () => void;
+  onChangeRole: (r: Role) => void;
 }) {
+  const dropRef = useRef<HTMLDivElement>(null);
+  const editable = canChangeRole(myRole, user.role);
+  const allowedRoles = getAllowedRoles(myRole);
+
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) onToggleDropdown();
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [isDropdownOpen, onToggleDropdown]);
+
   return (
-    <div className={styles.statCard}>
-      <div className={`${styles.statIcon} ${styles[`tone_${tone}`]}`}>{icon}</div>
-      <div className={styles.statBody}>
-        <div className={styles.statValue}>{value}</div>
-        <div className={styles.statLabel}>{label}</div>
-      </div>
-    </div>
+    <tr>
+      <td>
+        <div className={styles.userCell}>
+          <div className={styles.userInfo}>
+            <span className={styles.userName}>{user.name}</span>
+            <span className={styles.userEmail}>{user.email}</span>
+          </div>
+        </div>
+      </td>
+      <td>{user.phone || <span className={styles.muted}>—</span>}</td>
+      <td>
+        <div className={styles.roleWrap} ref={dropRef}>
+          {editable ? (
+            <span
+              className={`${styles.role} ${styles[`role_${user.role}`]} ${styles.roleClickable}`}
+              onClick={onToggleDropdown}
+            >
+              {roleLabels[user.role]} <FaChevronDown className={styles.roleChevron} />
+            </span>
+          ) : (
+            <span className={`${styles.role} ${styles[`role_${user.role}`]}`}>
+              <FaShieldAlt style={{ fontSize: 9, marginRight: 4 }} />
+              {roleLabels[user.role]}
+            </span>
+          )}
+          {isDropdownOpen && editable && (
+            <div className={styles.roleDropdown}>
+              {allowedRoles.map(r => (
+                <button
+                  key={r}
+                  className={`${styles.roleOption} ${r === user.role ? styles.roleOptionActive : ''}`}
+                  onClick={() => onChangeRole(r)}
+                >
+                  <span className={`${styles.roleDot} ${styles[`dot_${r}`]}`} />
+                  {roleLabels[r]}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </td>
+      <td className={styles.numCell}>{user.order_count}</td>
+      <td className={styles.numCell}>{Number(user.total_spent) > 0 ? `${formatMoney(user.total_spent)} ₴` : <span className={styles.muted}>—</span>}</td>
+      <td className={styles.dateCell}>{formatDate(user.created_at)}</td>
+    </tr>
   );
 }
 
@@ -314,12 +321,9 @@ function SkeletonPage() {
           </div>
         ))}
       </div>
-      <div className={`${styles.skeleton} ${styles.skelTabs}`} />
-      <div className={`${styles.skeleton} ${styles.skelToolbar}`} />
       <div className={styles.tableWrap}>
         {[0, 1, 2, 3, 4].map(i => (
           <div key={i} className={styles.skelRow}>
-            <div className={`${styles.skeleton} ${styles.skelAvatar}`} />
             <div className={styles.skelRowText}>
               <div className={`${styles.skeleton} ${styles.skelLineLg}`} />
               <div className={`${styles.skeleton} ${styles.skelLineSm}`} />
@@ -328,78 +332,6 @@ function SkeletonPage() {
             <div className={`${styles.skeleton} ${styles.skelBadge}`} />
           </div>
         ))}
-      </div>
-    </>
-  );
-}
-
-function UserForm({ user, myRole, onSave, onCancel }: {
-  user: UserOut;
-  myRole: string;
-  onSave: () => void;
-  onCancel: () => void;
-}) {
-  const [name, setName] = useState(user.name);
-  const [email, setEmail] = useState(user.email);
-  const [phone, setPhone] = useState(user.phone || '');
-  const allowedRoles = getAllowedRoles(myRole);
-  const [role, setRole] = useState<Role>(allowedRoles.includes(user.role) ? user.role : allowedRoles[allowedRoles.length - 1]);
-  const [saving, setSaving] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      const res = await fetch(`${API_BASE}/users/${user.id}`, {
-        method: 'PUT',
-        headers: authHeaders(),
-        body: JSON.stringify({ name, email, phone: phone || null, role }),
-      });
-      if (!res.ok) throw new Error(`Помилка збереження: ${res.status}`);
-      onSave();
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Помилка збереження');
-      setSaving(false);
-    }
-  };
-
-  return (
-    <>
-      <div className={styles.topBar}>
-        <button className={styles.backBtn} onClick={onCancel}>← Назад</button>
-        <h1 className={styles.title}>Редагувати користувача</h1>
-      </div>
-      <div className={styles.content}>
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.grid}>
-            <div className={styles.field}>
-              <label className={styles.label}>Ім'я</label>
-              <input className={styles.input} value={name} onChange={e => setName(e.target.value)} required />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>Email</label>
-              <input className={styles.input} type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>Телефон</label>
-              <input className={styles.input} value={phone} onChange={e => setPhone(e.target.value)} />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>Роль</label>
-              <select className={styles.input} value={role} onChange={e => setRole(e.target.value as Role)}>
-                {allowedRoles.map(r => (
-                  <option key={r} value={r}>{roleLabels[r]}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className={styles.formActions}>
-            <button type="button" className={styles.cancelBtn} onClick={onCancel}>Скасувати</button>
-            <button type="submit" className={styles.saveBtn} disabled={saving}>
-              {saving ? 'Збереження...' : 'Зберегти'}
-            </button>
-          </div>
-        </form>
       </div>
     </>
   );

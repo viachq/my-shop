@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 # ── Auth ──────────────────────────────────────────────────────────────
@@ -12,10 +12,27 @@ class LoginRequest(BaseModel):
 
 
 class RegisterRequest(BaseModel):
-    name: str
+    name: str = Field(min_length=2, max_length=50)
     email: str
     phone: str | None = None
-    password: str
+    password: str = Field(min_length=6, max_length=128)
+
+    @field_validator("name")
+    @classmethod
+    def name_valid(cls, v: str) -> str:
+        v = v.strip()
+        if len(v) < 2:
+            raise ValueError("Ім'я має містити щонайменше 2 символи")
+        return v
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Пароль повинен містити хоча б одну цифру")
+        if not any(c.isalpha() for c in v):
+            raise ValueError("Пароль повинен містити хоча б одну літеру")
+        return v
 
 
 class TokenResponse(BaseModel):
@@ -30,9 +47,27 @@ class UserOut(BaseModel):
     email: str
     phone: str | None
     role: str
+    is_verified: bool
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class UserWithStats(UserOut):
+    order_count: int = 0
+    total_spent: Decimal = Decimal(0)
+
+
+class RegisterResponse(BaseModel):
+    message: str
+
+
+class VerifyEmailResponse(BaseModel):
+    message: str
+
+
+class ResendVerificationRequest(BaseModel):
+    email: str
 
 
 # ── Users ─────────────────────────────────────────────────────────────
@@ -44,10 +79,32 @@ class UserUpdate(BaseModel):
 
 
 class UserProfileUpdate(BaseModel):
-    name: str | None = None
+    name: str | None = Field(None, min_length=2, max_length=50)
     email: str | None = None
     phone: str | None = None
-    password: str | None = None
+    old_password: str | None = None
+    password: str | None = Field(None, min_length=6, max_length=128)
+
+    @field_validator("name")
+    @classmethod
+    def name_valid(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        v = v.strip()
+        if len(v) < 2:
+            raise ValueError("Ім'я має містити щонайменше 2 символи")
+        return v
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Пароль повинен містити хоча б одну цифру")
+        if not any(c.isalpha() for c in v):
+            raise ValueError("Пароль повинен містити хоча б одну літеру")
+        return v
 
 
 # ── Products ──────────────────────────────────────────────────────────
@@ -56,11 +113,9 @@ class ProductCreate(BaseModel):
     price: Decimal
     old_price: Decimal | None = None
     img: str | None = None
-    images: list[str] = []
     badge: str | None = None
     category: str
     stock: int = 0
-    weight: str | None = None
 
 
 class ProductUpdate(BaseModel):
@@ -68,11 +123,9 @@ class ProductUpdate(BaseModel):
     price: Decimal | None = None
     old_price: Decimal | None = None
     img: str | None = None
-    images: list[str] | None = None
     badge: str | None = None
     category: str | None = None
     stock: int | None = None
-    weight: str | None = None
 
 
 class ProductOut(BaseModel):
@@ -81,11 +134,9 @@ class ProductOut(BaseModel):
     price: Decimal
     old_price: Decimal | None
     img: str | None
-    images: list[str]
     badge: str | None
     category: str
     stock: int
-    weight: str | None
     created_at: datetime
     avg_rating: float | None = None
     review_count: int = 0
@@ -114,7 +165,6 @@ class OrderCreate(BaseModel):
     surname: str
     phone: str
     email: str
-    city: str
     address: str
     comment: str | None = None
     payment_method: str
@@ -134,7 +184,6 @@ class OrderOut(BaseModel):
     surname: str
     phone: str
     email: str
-    city: str
     address: str
     comment: str | None
     payment_method: str
@@ -155,7 +204,6 @@ class PromoCodeCreate(BaseModel):
     code: str
     discount_percent: int | None = None
     discount_amount: Decimal | None = None
-    min_order: Decimal | None = Decimal("0")
     max_uses: int | None = None
     is_active: bool = True
     expires_at: datetime | None = None
@@ -165,7 +213,6 @@ class PromoCodeUpdate(BaseModel):
     code: str | None = None
     discount_percent: int | None = None
     discount_amount: Decimal | None = None
-    min_order: Decimal | None = None
     max_uses: int | None = None
     is_active: bool | None = None
     expires_at: datetime | None = None
@@ -176,7 +223,6 @@ class PromoCodeOut(BaseModel):
     code: str
     discount_percent: int | None
     discount_amount: Decimal | None
-    min_order: Decimal | None
     max_uses: int | None
     used_count: int
     is_active: bool
@@ -195,14 +241,6 @@ class PromoCodeValidateResponse(BaseModel):
     valid: bool
     discount: Decimal
     message: str
-
-
-# ── Site Settings ────────────────────────────────────────────────
-class SocialLinksUpdate(BaseModel):
-    facebook: str = ""
-    instagram: str = ""
-    tiktok: str = ""
-    telegram: str = ""
 
 
 # ── Analytics ─────────────────────────────────────────────────────────

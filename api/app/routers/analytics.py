@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import and_, func
@@ -11,24 +12,58 @@ from app.models import Order, OrderItem, Product, User
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 
+def _resolve_period(days: int, start_date: Optional[str], end_date: Optional[str]):
+    now = datetime.now(timezone.utc)
+    if start_date and end_date:
+        p_start = datetime.strptime(start_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        p_end   = datetime.strptime(end_date,   "%Y-%m-%d").replace(tzinfo=timezone.utc) + timedelta(days=1)
+    else:
+        p_end   = now
+        p_start = now - timedelta(days=days)
+    return p_start, p_end
+
+
 @router.get("/summary")
 def get_summary(
+    days: int = 30,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("superadmin", "admin")),
 ):
-    total_revenue = db.query(func.coalesce(func.sum(Order.total), 0)).scalar()
+    now = datetime.now(timezone.utc)
+    period_start, period_end = _resolve_period(days, start_date, end_date)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start  = now - timedelta(days=7)
 
-    orders_count = db.query(func.count(Order.id)).scalar()
+    total_revenue = db.query(func.coalesce(func.sum(Order.total), 0)).filter(
+        Order.created_at >= period_start, Order.created_at < period_end,
+    ).scalar()
 
-    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    orders_count = db.query(func.count(Order.id)).filter(
+        Order.created_at >= period_start, Order.created_at < period_end,
+    ).scalar()
+
     new_customers = (
         db.query(func.count(User.id))
-        .filter(User.role == "customer", User.created_at >= thirty_days_ago)
+        .filter(User.role == "customer", User.created_at >= period_start, User.created_at < period_end)
+        .scalar()
+    )
+    new_customers_today = (
+        db.query(func.count(User.id))
+        .filter(User.role == "customer", User.created_at >= today_start)
+        .scalar()
+    )
+    new_customers_week = (
+        db.query(func.count(User.id))
+        .filter(User.role == "customer", User.created_at >= week_start)
         .scalar()
     )
 
     average_check = (
-        db.query(func.coalesce(func.avg(Order.total), 0)).scalar()
+        db.query(func.coalesce(func.avg(Order.total), 0))
+        .filter(Order.created_at >= period_start, Order.created_at < period_end)
+        .scalar()
     )
 
     top_products_query = (
@@ -37,8 +72,10 @@ def get_summary(
             func.sum(OrderItem.qty).label("total_qty"),
             func.sum(OrderItem.qty * OrderItem.price).label("total_revenue"),
         )
+        .join(Order, Order.id == OrderItem.order_id)
+        .filter(Order.created_at >= period_start, Order.created_at < period_end)
         .group_by(OrderItem.product_name)
-        .order_by(func.sum(OrderItem.qty).desc())
+        .order_by(func.sum(OrderItem.qty * OrderItem.price).desc())
         .limit(5)
         .all()
     )
@@ -51,36 +88,27 @@ def get_summary(
         for row in top_products_query
     ]
 
-    category_query = (
-        db.query(
-            Product.category,
-            func.count(Product.id).label("count"),
-        )
-        .group_by(Product.category)
-        .order_by(func.count(Product.id).desc())
-        .all()
-    )
-    category_breakdown = [
-        {"category": row.category, "count": row.count}
-        for row in category_query
-    ]
-
     return {
         "total_revenue": float(total_revenue),
-        "orders_count": orders_count,
-        "new_customers": new_customers,
+        "orders_count": int(orders_count),
+        "new_customers": int(new_customers),
+        "new_customers_today": int(new_customers_today),
+        "new_customers_week": int(new_customers_week),
         "average_check": round(float(average_check), 2),
         "top_products": top_products,
-        "category_breakdown": category_breakdown,
     }
 
 
 @router.get("/detailed")
 def get_detailed(
+    days: int = 30,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("superadmin", "admin")),
 ):
     now = datetime.now(timezone.utc)
+    period_start, period_end = _resolve_period(days, start_date, end_date)
     thirty_days_ago = now - timedelta(days=30)
     sixty_days_ago = now - timedelta(days=60)
     six_months_ago = now - timedelta(days=180)
@@ -91,7 +119,7 @@ def get_detailed(
             func.coalesce(func.sum(Order.total), 0).label("revenue"),
             func.count(Order.id).label("orders"),
         )
-        .filter(Order.created_at >= thirty_days_ago)
+        .filter(Order.created_at >= period_start, Order.created_at < period_end)
         .group_by(func.date(Order.created_at))
         .order_by(func.date(Order.created_at))
         .all()
@@ -384,21 +412,6 @@ def get_advanced(
         for h in range(24)
     ]
 
-    city_query = (
-        db.query(
-            Order.city,
-            func.count(Order.id).label("cnt"),
-            func.coalesce(func.sum(Order.total), 0).label("revenue"),
-        )
-        .group_by(Order.city)
-        .order_by(func.sum(Order.total).desc())
-        .all()
-    )
-    orders_by_city = [
-        {"city": row.city, "count": int(row.cnt), "revenue": float(row.revenue)}
-        for row in city_query
-    ]
-
     status_query = (
         db.query(Order.status, func.count(Order.id).label("cnt"))
         .group_by(Order.status)
@@ -581,21 +594,6 @@ def get_advanced(
         for row in pm_query
     ]
 
-    city_rev_query = (
-        db.query(
-            Order.city,
-            func.coalesce(func.sum(Order.total), 0).label("revenue"),
-        )
-        .group_by(Order.city)
-        .order_by(func.sum(Order.total).desc())
-        .limit(10)
-        .all()
-    )
-    revenue_by_city = [
-        {"city": row.city, "revenue": float(row.revenue)}
-        for row in city_rev_query
-    ]
-
     return {
         "customer_segmentation": customer_segmentation,
         "new_vs_returning": new_vs_returning,
@@ -603,7 +601,6 @@ def get_advanced(
         "retention_rate": retention_rate,
         "orders_by_weekday": orders_by_weekday,
         "orders_by_hour": orders_by_hour,
-        "orders_by_city": orders_by_city,
         "status_funnel": status_funnel,
         "cancellation_rate": cancellation_rate,
         "avg_delivery_days": avg_delivery_days,
@@ -615,5 +612,4 @@ def get_advanced(
         "sale_impact": sale_impact,
         "aov_trend": aov_trend,
         "revenue_by_payment_method": revenue_by_payment_method,
-        "revenue_by_city": revenue_by_city,
     }

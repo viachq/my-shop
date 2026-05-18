@@ -6,16 +6,16 @@ import { ThemeProvider } from './context/ThemeContext';
 import TopBar from './components/TopBar';
 import Header from './components/Header';
 import HeroSlider from './components/HeroSlider';
-import CategoryGrid from './components/CategoryGrid';
 import HomeGrid from './components/HomeGrid';
 import Footer from './components/Footer';
 import CatalogPage from './pages/CatalogPage';
-import AboutPage from './pages/AboutPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import CheckEmailPage from './pages/CheckEmailPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import ProductPage from './pages/ProductPage';
 import ProfilePage from './pages/ProfilePage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
@@ -26,7 +26,7 @@ function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    fetch('/api/products/')
+    fetch('/api/products/popular?limit=25')
       .then(r => r.json())
       .then(data => {
         if (!Array.isArray(data)) return;
@@ -40,7 +40,6 @@ function HomePage() {
       <TopBar />
       <Header />
       <HeroSlider />
-      <CategoryGrid />
       <HomeGrid products={products} />
       <Footer />
     </>
@@ -56,12 +55,13 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/catalog" element={<CatalogPage />} />
-            <Route path="/about" element={<AboutPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/order-success" element={<OrderSuccessPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/check-email" element={<CheckEmailPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/orders" element={<OrderHistoryPage />} />

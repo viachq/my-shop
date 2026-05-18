@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { FaSearch, FaChevronDown, FaInbox, FaBoxOpen, FaTruck, FaCheckCircle, FaClock } from 'react-icons/fa';
 import styles from './AdminOrders.module.css';
 
@@ -22,7 +22,6 @@ interface OrderOut {
   surname: string;
   phone: string;
   email: string;
-  city: string;
   address: string;
   comment: string | null;
   payment_method: string;
@@ -94,12 +93,15 @@ function isThisWeek(d: Date, now: Date): boolean {
   return d >= start && d <= now;
 }
 
+interface ProductInfo { img: string | null; }
+
 export default function AdminOrders() {
   const [orders, setOrders] = useState<OrderOut[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [productMap, setProductMap] = useState<Record<string, ProductInfo>>({});
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -117,6 +119,14 @@ export default function AdminOrders() {
 
   useEffect(() => {
     fetchOrders();
+    fetch(`${API}/products/`, { headers: authHeaders() })
+      .then(r => r.json())
+      .then((products: { name: string; img: string | null }[]) => {
+        const map: Record<string, ProductInfo> = {};
+        for (const p of products) map[p.name] = { img: p.img };
+        setProductMap(map);
+      })
+      .catch(() => {});
   }, [fetchOrders]);
 
   const filtered = orders.filter(o => {
@@ -174,15 +184,13 @@ export default function AdminOrders() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <div className={styles.statusTabs}>
+        <div className={styles.filterGroup}>
           {Object.entries(tabLabels).map(([key, label]) => (
             <button
               key={key}
-              className={`${styles.statusTab} ${statusFilter === key ? styles.tabActive : ''}`}
+              className={`${styles.filterBtn} ${statusFilter === key ? styles.filterActive : ''}`}
               onClick={() => setStatusFilter(key)}
-            >
-              {label} <span className={styles.tabCount}>{statusCounts[key as keyof typeof statusCounts]}</span>
-            </button>
+            >{label}</button>
           ))}
         </div>
         <span className={styles.topBarCount}>Знайдено: <strong>{filtered.length}</strong></span>
@@ -193,30 +201,34 @@ export default function AdminOrders() {
         ) : (
           <>
             <div className={styles.statsStrip}>
-              <StatCard
-                icon={<FaClock />}
-                label="Нові сьогодні"
-                value={newToday}
-                tone="blue"
-              />
-              <StatCard
-                icon={<FaBoxOpen />}
-                label="В обробці (тижд.)"
-                value={processingWeek}
-                tone="orange"
-              />
-              <StatCard
-                icon={<FaTruck />}
-                label="Відправлено (тижд.)"
-                value={shippedWeek}
-                tone="purple"
-              />
-              <StatCard
-                icon={<FaCheckCircle />}
-                label="Доставлено (тижд.)"
-                value={deliveredWeek}
-                tone="green"
-              />
+              <div className={styles.statCard}>
+                <div className={`${styles.statIcon} ${styles.tone_blue}`}><FaClock /></div>
+                <div className={styles.statBody}>
+                  <div className={styles.statValue}>{newToday}</div>
+                  <div className={styles.statLabel}>Нові сьогодні</div>
+                </div>
+              </div>
+              <div className={styles.statCard}>
+                <div className={`${styles.statIcon} ${styles.tone_orange}`}><FaBoxOpen /></div>
+                <div className={styles.statBody}>
+                  <div className={styles.statValue}>{processingWeek}</div>
+                  <div className={styles.statLabel}>В обробці (тижд.)</div>
+                </div>
+              </div>
+              <div className={styles.statCard}>
+                <div className={`${styles.statIcon} ${styles.tone_purple}`}><FaTruck /></div>
+                <div className={styles.statBody}>
+                  <div className={styles.statValue}>{shippedWeek}</div>
+                  <div className={styles.statLabel}>Відправлено (тижд.)</div>
+                </div>
+              </div>
+              <div className={styles.statCard}>
+                <div className={`${styles.statIcon} ${styles.tone_green}`}><FaCheckCircle /></div>
+                <div className={styles.statBody}>
+                  <div className={styles.statValue}>{deliveredWeek}</div>
+                  <div className={styles.statLabel}>Доставлено (тижд.)</div>
+                </div>
+              </div>
             </div>
 
 
@@ -241,6 +253,7 @@ export default function AdminOrders() {
                         key={o.id}
                         order={o}
                         isOpen={isOpen}
+                        productMap={productMap}
                         onToggle={() => setExpandedId(isOpen ? null : o.id)}
                         onStatusChange={(s) => changeStatus(o.id, s)}
                       />
@@ -267,24 +280,60 @@ export default function AdminOrders() {
   );
 }
 
-function OrderRow({ order, isOpen, onToggle, onStatusChange }: {
+function OrderRow({ order, isOpen, productMap, onToggle, onStatusChange }: {
   order: OrderOut;
   isOpen: boolean;
+  productMap: Record<string, ProductInfo>;
   onToggle: () => void;
   onStatusChange: (s: OrderStatus) => void;
 }) {
   const itemsCount = order.items.reduce((sum, it) => sum + it.qty, 0);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const statusRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!statusOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (statusRef.current && !statusRef.current.contains(e.target as Node)) setStatusOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [statusOpen]);
+
   return (
     <>
       <tr className={`${styles.orderRow} ${isOpen ? styles.orderRowActive : ''}`} onClick={onToggle}>
         <td className={styles.orderId}>#{order.id}</td>
         <td>
           <div className={styles.customerName}>{order.name} {order.surname}</div>
-          <div className={styles.customerSub}>{order.city || '—'}</div>
+          <div className={styles.customerSub}>{order.address || '—'}</div>
         </td>
         <td className={styles.itemsCell}>{pluralizeItems(itemsCount)}</td>
         <td className={styles.total}>{formatHryvnia(order.total)}</td>
-        <td><span className={`${styles.status} ${styles[`status_${order.status}`]}`}>{statusLabels[order.status]}</span></td>
+        <td>
+          <div className={styles.statusWrap} ref={statusRef}>
+            <span
+              className={`${styles.status} ${styles[`status_${order.status}`]} ${styles.statusClickable}`}
+              onClick={e => { e.stopPropagation(); setStatusOpen(!statusOpen); }}
+            >
+              {statusLabels[order.status]} <FaChevronDown className={styles.statusChevron} />
+            </span>
+            {statusOpen && (
+              <div className={styles.statusDropdown}>
+                {(Object.keys(statusLabels) as OrderStatus[]).map(s => (
+                  <button
+                    key={s}
+                    className={`${styles.statusOption} ${s === order.status ? styles.statusOptionActive : ''}`}
+                    onClick={e => { e.stopPropagation(); onStatusChange(s); setStatusOpen(false); }}
+                  >
+                    <span className={`${styles.statusDot} ${styles[`dot_${s}`]}`} />
+                    {statusLabels[s]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </td>
         <td className={styles.dateCell}>{formatDateTime(order.created_at)}</td>
         <td>
           <button
@@ -304,7 +353,7 @@ function OrderRow({ order, isOpen, onToggle, onStatusChange }: {
                   <div className={styles.blockTitle}>Контакти</div>
                   <div className={styles.blockRow}><span className={styles.blockLabel}>Телефон:</span> <span>{order.phone}</span></div>
                   <div className={styles.blockRow}><span className={styles.blockLabel}>Email:</span> <span>{order.email}</span></div>
-                  <div className={styles.blockRow}><span className={styles.blockLabel}>Адреса:</span> <span>{order.city}, {order.address}</span></div>
+                  <div className={styles.blockRow}><span className={styles.blockLabel}>Адреса:</span> <span>{order.address}</span></div>
                   {order.comment && (
                     <div className={styles.blockRow}><span className={styles.blockLabel}>Коментар:</span> <span>{order.comment}</span></div>
                   )}
@@ -319,42 +368,32 @@ function OrderRow({ order, isOpen, onToggle, onStatusChange }: {
 
               <div className={styles.itemsBlock}>
                 <div className={styles.blockTitle}>Товари</div>
-                <div className={styles.itemsTable}>
-                  <div className={styles.itemsHead}>
-                    <span>Назва</span>
-                    <span className={styles.itemQty}>К-сть</span>
-                    <span className={styles.itemPrice}>Ціна</span>
-                    <span className={styles.itemSub}>Сума</span>
-                  </div>
-                  {order.items.map(item => (
-                    <div key={item.id} className={styles.itemLine}>
-                      <span>{item.product_name}</span>
-                      <span className={styles.itemQty}>{item.qty}</span>
-                      <span className={styles.itemPrice}>{formatHryvnia(item.price)}</span>
-                      <span className={styles.itemSub}>{formatHryvnia(item.price * item.qty)}</span>
-                    </div>
-                  ))}
-                  <div className={styles.itemsTotalRow}>
-                    <span>Разом</span>
-                    <span>{formatHryvnia(order.total)}</span>
-                  </div>
+                <div className={styles.itemsList}>
+                  {order.items.map(item => {
+                    const product = productMap[item.product_name];
+                    return (
+                      <div key={item.id} className={styles.itemCard}>
+                        <div className={styles.itemImgWrap}>
+                          {product?.img ? (
+                            <img src={product.img} alt="" className={styles.itemImg} />
+                          ) : (
+                            <div className={styles.itemImgEmpty} />
+                          )}
+                        </div>
+                        <div className={styles.itemInfo}>
+                          <div className={styles.itemName}>{item.product_name}</div>
+                          <div className={styles.itemMeta}>
+                            <span>{item.qty} x {formatHryvnia(item.price)}</span>
+                          </div>
+                        </div>
+                        <div className={styles.itemTotal}>{formatHryvnia(item.price * item.qty)}</div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
-
-              <div className={styles.statusBlock}>
-                <div className={styles.blockTitle}>Змінити статус</div>
-                <div className={styles.statusSelectWrap}>
-                  <select
-                    className={styles.statusSelect}
-                    value={order.status}
-                    onClick={e => e.stopPropagation()}
-                    onChange={e => onStatusChange(e.target.value as OrderStatus)}
-                  >
-                    {(Object.keys(statusLabels) as OrderStatus[]).map(s => (
-                      <option key={s} value={s}>{statusLabels[s]}</option>
-                    ))}
-                  </select>
-                  <FaChevronDown className={styles.selectChevron} />
+                <div className={styles.itemsTotalRow}>
+                  <span>Разом</span>
+                  <span>{formatHryvnia(order.total)}</span>
                 </div>
               </div>
             </div>
@@ -362,23 +401,6 @@ function OrderRow({ order, isOpen, onToggle, onStatusChange }: {
         </tr>
       )}
     </>
-  );
-}
-
-function StatCard({ icon, label, value, tone }: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  tone: 'teal' | 'red' | 'orange' | 'green' | 'blue' | 'purple';
-}) {
-  return (
-    <div className={styles.statCard}>
-      <div className={`${styles.statIcon} ${styles[`tone_${tone}`]}`}>{icon}</div>
-      <div className={styles.statBody}>
-        <div className={styles.statValue}>{value}</div>
-        <div className={styles.statLabel}>{label}</div>
-      </div>
-    </div>
   );
 }
 

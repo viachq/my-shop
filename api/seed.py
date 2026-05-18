@@ -61,14 +61,6 @@ def seed():
         ),
         User(
             name="Складський Іван",
-            email="warehouse@techbox.com",
-            phone="+380673456789",
-            password_hash=hash_password("warehouse@techbox.com"),
-            role=UserRole.warehouse,
-        ),
-        # ── Customers (11) ──
-        User(
-            name="Test User",
             email="test@test.com",
             phone="+380670000001",
             password_hash=hash_password("test@test.com"),
@@ -693,7 +685,7 @@ def seed():
 
     db.close()
     print(f"\nDone! Seed completed successfully.")
-    print(f"  Users: {len(users)} (1 superadmin, 1 admin, 1 manager, 1 warehouse, 11 customers)")
+    print(f"  Users: {len(users)} (1 superadmin, 1 admin, 1 manager, 11 customers)")
     print(f"  Products: {len(products)}")
     print(f"  Promo Codes: {len(promo_codes)}")
     print(f"  Orders: {len(orders_data)}")

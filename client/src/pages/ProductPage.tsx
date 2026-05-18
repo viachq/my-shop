@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FaShoppingCart, FaCheck, FaHeart, FaRegHeart, FaTimes, FaSearchPlus, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaShoppingCart, FaCheck, FaHeart, FaRegHeart, FaTimes, FaSearchPlus } from 'react-icons/fa';
 import { apiToProduct, type Product } from '../data/products';
 import { useCart } from '../context/CartContext';
+import { formatPrice } from '../utils/formatPrice';
 import { useAuth } from '../context/AuthContext';
 import { loadSavedProducts, toggleSavedProduct } from '../components/ProductCard';
 import TopBar from '../components/TopBar';
@@ -21,6 +22,11 @@ interface Review {
   created_at: string;
 }
 
+interface Spec {
+  label: string;
+  value: string;
+}
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
@@ -32,58 +38,7 @@ function renderMarkdown(md: string): string {
     .replace(/\n/g, '<br>');
 }
 
-function getSpecs(product: Product): { label: string; value: string }[] {
-  const specs: { label: string; value: string }[] = [];
-
-  if (product.category) specs.push({ label: 'Категорія', value: product.category });
-
-  const ramStorage = product.name.match(/(\d+)\/(\d+)\s*GB/i);
-  const storageOnly = product.name.match(/(?<!\d\/)(\d+)\s*GB/i);
-  if (ramStorage) {
-    specs.push({ label: 'ОЗП', value: `${ramStorage[1]} GB` });
-    specs.push({ label: 'Накопичувач', value: `${ramStorage[2]} GB` });
-  } else if (storageOnly) {
-    specs.push({ label: 'Накопичувач', value: `${storageOnly[1]} GB` });
-  }
-
-  if (product.weight) specs.push({ label: 'Вага', value: product.weight });
-
-  const cat = product.category || '';
-  const isApple = product.name.includes('Apple') || product.name.includes('iPhone') || product.name.includes('iPad') || product.name.includes('MacBook') || product.name.includes('AirPods') || product.name.includes('Watch');
-
-  if (cat === 'Смартфони') {
-    specs.push({ label: 'ОС', value: isApple ? 'iOS 18' : 'Android 14' });
-    specs.push({ label: 'Зв\'язок', value: '5G / LTE / Wi-Fi / Bluetooth' });
-  } else if (cat === 'Ноутбуки') {
-    specs.push({ label: 'ОС', value: isApple ? 'macOS' : 'Windows 11' });
-    specs.push({ label: 'Дисплей', value: '13–15"' });
-  } else if (cat === 'Навушники') {
-    specs.push({ label: 'Підключення', value: 'Bluetooth 5.3' });
-    specs.push({ label: 'Шумозаглушення', value: 'ANC' });
-  } else if (cat === 'Смарт-годинники') {
-    specs.push({ label: 'Сумісність', value: 'iOS / Android' });
-    specs.push({ label: 'Водозахист', value: 'IP68' });
-  } else if (cat === 'Планшети') {
-    specs.push({ label: 'ОС', value: isApple ? 'iPadOS 18' : 'Android 14' });
-    specs.push({ label: 'Підключення', value: 'Wi-Fi / Bluetooth' });
-  } else if (cat === 'Акустика') {
-    specs.push({ label: 'Підключення', value: 'Bluetooth / Wi-Fi' });
-    specs.push({ label: 'Водозахист', value: 'IPX7' });
-  } else if (cat === 'Ігрові приставки') {
-    specs.push({ label: 'Роздільна здатність', value: '4K / 120 fps' });
-    specs.push({ label: 'Сховище', value: 'SSD' });
-  } else if (cat === 'Фото та відео') {
-    specs.push({ label: 'Тип', value: 'Екшн-камера' });
-    specs.push({ label: 'Відео', value: '4K / 60 fps' });
-  } else if (cat === 'Мережеве обладнання') {
-    specs.push({ label: 'Стандарт', value: 'Wi-Fi 6 (802.11ax)' });
-    specs.push({ label: 'Діапазони', value: 'Dual Band' });
-  }
-
-  specs.push({ label: 'Гарантія', value: '12 місяців' });
-
-  return specs;
-}
+type Tab = 'description' | 'specs' | 'reviews';
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -92,17 +47,15 @@ export default function ProductPage() {
   const [added, setAdded] = useState(false);
   const [savedIds, setSavedIds] = useState<number[]>(loadSavedProducts);
   const [aiAdvice, setAiAdvice] = useState('');
+  const [aiSpecs, setAiSpecs] = useState<Spec[]>([]);
   const [aiLoading, setAiLoading] = useState(true);
-  const [aiOpen, setAiOpen] = useState(true);
-  const [specsOpen, setSpecsOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<Tab>('description');
   const [lightbox, setLightbox] = useState(false);
-  const [selectedImgIdx, setSelectedImgIdx] = useState(0);
   const [product, setProduct] = useState<Product | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
 
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [reviewsOpen, setReviewsOpen] = useState(true);
   const [canReview, setCanReview] = useState<boolean | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewHover, setReviewHover] = useState(0);
@@ -113,7 +66,6 @@ export default function ProductPage() {
   useEffect(() => {
     setPageLoading(true);
     setProduct(null);
-    setSelectedImgIdx(0);
     fetch(`/api/products/${id}`)
       .then(r => {
         if (!r.ok) throw new Error('not found');
@@ -135,13 +87,13 @@ export default function ProductPage() {
     if (!product) return [];
     return allProducts
       .filter(p => p.category === product.category && p.id !== product.id)
-      .sort(() => Math.random() - 0.5)
       .slice(0, 4);
   }, [product, allProducts]);
 
   useEffect(() => {
     if (!product) return;
     setAiAdvice('');
+    setAiSpecs([]);
     setAiLoading(true);
     fetch('/api/ai/product-advice', {
       method: 'POST',
@@ -149,8 +101,11 @@ export default function ProductPage() {
       body: JSON.stringify({ product_name: product.name, category: product.category }),
     })
       .then(r => r.json())
-      .then(data => setAiAdvice(data.success && data.advice ? data.advice : ''))
-      .catch(() => setAiAdvice(''))
+      .then(data => {
+        setAiAdvice(data.success && data.advice ? data.advice : '');
+        setAiSpecs(Array.isArray(data.specs) ? data.specs : []);
+      })
+      .catch(() => { setAiAdvice(''); setAiSpecs([]); })
       .finally(() => setAiLoading(false));
   }, [product?.name]);
 
@@ -215,11 +170,7 @@ export default function ProductPage() {
       <>
         <TopBar />
         <Header />
-        <div className={styles.page}>
-          <div className="container">
-            <div className={styles.notFound}>Завантаження...</div>
-          </div>
-        </div>
+        <div className={styles.page}><div className="container"><div className={styles.notFound}>Завантаження...</div></div></div>
         <Footer />
       </>
     );
@@ -245,18 +196,7 @@ export default function ProductPage() {
   }
 
   const isSaved = product.id != null && savedIds.includes(product.id);
-  const allImages = product.images?.length ? product.images : [product.img];
-
-  const handleAdd = () => {
-    addToCart(product);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1000);
-  };
-
-  const specs = getSpecs(product);
-  const discountPct = product.oldPrice
-    ? Math.round((1 - parseFloat(product.price) / parseFloat(product.oldPrice)) * 100)
-    : 0;
+  const handleAdd = () => { addToCart(product); setAdded(true); setTimeout(() => setAdded(false), 1000); };
 
   return (
     <>
@@ -268,10 +208,7 @@ export default function ProductPage() {
             <Link to="/">Головна</Link>
             <span>/</span>
             {product.category && (
-              <>
-                <Link to={`/catalog?cat=${encodeURIComponent(product.category)}`}>{product.category}</Link>
-                <span>/</span>
-              </>
+              <><Link to={`/catalog?cat=${encodeURIComponent(product.category)}`}>{product.category}</Link><span>/</span></>
             )}
             <span>{product.name}</span>
           </nav>
@@ -279,272 +216,196 @@ export default function ProductPage() {
           <div className={styles.detail}>
             <div className={styles.imageWrap}>
               <div className={styles.imageMain} onClick={() => setLightbox(true)}>
-                {discountPct > 0 && (
-                  <div className={styles.discountBadge}>-{discountPct}%</div>
-                )}
-                <img className={styles.image} src={allImages[selectedImgIdx]} alt={product.name} />
+                <img className={styles.image} src={product.img} alt={product.name} />
                 <div className={styles.zoomHint}><FaSearchPlus /></div>
               </div>
-              {allImages.length > 1 && (
-                <div className={styles.thumbs}>
-                  {allImages.map((url, i) => (
-                    <button
-                      key={i}
-                      className={`${styles.thumb} ${i === selectedImgIdx ? styles.thumbActive : ''}`}
-                      onClick={() => setSelectedImgIdx(i)}
-                    >
-                      <img src={url} alt="" />
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div className={styles.info}>
-              {product.category && (
-                <div className={styles.badges}>
-                  {product.badge === 'sale' && (
-                    <span className={`${styles.badge} ${styles.badgeSale}`}>Акція</span>
-                  )}
-                  <span className={`${styles.badge} ${styles.badgeCategory}`}>{product.category}</span>
-                </div>
-              )}
+              <div className={styles.infoInner}>
+                <h1 className={styles.name}>{product.name}</h1>
 
-              <h2 className={styles.name}>{product.name}</h2>
-
-              {product.avgRating != null && (
-                <div className={styles.infoRating}>
-                  <span className={styles.infoStars}>
-                    {[1,2,3,4,5].map(s => (
-                      <span key={s} style={{ color: s <= Math.round(product.avgRating!) ? '#f59e0b' : 'var(--border)' }}>★</span>
-                    ))}
-                  </span>
-                  <span className={styles.infoRatingValue}>{product.avgRating.toFixed(1)}</span>
-                  {!!product.reviewCount && (
-                    <button
-                      className={styles.infoRatingLink}
-                      onClick={() => { setReviewsOpen(true); document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' }); }}
-                    >
-                      {product.reviewCount} відгуків
-                    </button>
-                  )}
-                </div>
-              )}
-
-              <div className={styles.infoDivider} />
-
-              <div className={styles.priceBlock}>
-                <span className={styles.price}>{product.price} &#8372;</span>
-                {product.oldPrice && (
-                  <span className={styles.oldPrice}>{product.oldPrice} &#8372;</span>
+                {product.avgRating != null && (
+                  <div className={styles.infoRating}>
+                    <span className={styles.infoStars}>
+                      {[1,2,3,4,5].map(s => (
+                        <span key={s} style={{ color: s <= Math.round(product.avgRating!) ? '#f59e0b' : 'var(--border)' }}>&#9733;</span>
+                      ))}
+                    </span>
+                    <span className={styles.infoRatingValue}>{product.avgRating.toFixed(1)}</span>
+                    {!!product.reviewCount && (
+                      <button className={styles.infoRatingLink} onClick={() => setActiveTab('reviews')}>
+                        {product.reviewCount} відгуків
+                      </button>
+                    )}
+                  </div>
                 )}
-              </div>
 
-              <div className={styles.stockBadge}>
-                <span className={styles.stockDot} />
-                В наявності
-              </div>
-
-              <div className={styles.actions}>
-                <button
-                  className={`${styles.addBtn} ${added ? styles.addBtnAdded : ''}`}
-                  onClick={handleAdd}
-                >
-                  {added ? <><FaCheck /> Додано</> : <><FaShoppingCart /> Додати у кошик</>}
-                </button>
-                <button
-                  className={`${styles.saveBtn} ${isSaved ? styles.saveBtnActive : ''}`}
-                  onClick={() => product.id != null && setSavedIds(toggleSavedProduct(product.id))}
-                >
-                  {isSaved ? <><FaHeart /> Збережено</> : <><FaRegHeart /> Зберегти</>}
-                </button>
+                <div className={styles.priceCard}>
+                  <div className={styles.priceBlock}>
+                    <span className={styles.price}>{formatPrice(product.price)} &#8372;</span>
+                    {product.oldPrice && <span className={styles.oldPrice}>{formatPrice(product.oldPrice)} &#8372;</span>}
+                  </div>
+                  <div className={styles.stockBadge}><span className={styles.stockDot} />В наявності</div>
+                  <div className={styles.actions}>
+                    <button className={`${styles.addBtn} ${added ? styles.addBtnAdded : ''}`} onClick={handleAdd}>
+                      {added ? <><FaCheck /> Додано</> : <><FaShoppingCart /> Додати у кошик</>}
+                    </button>
+                    <button className={`${styles.saveBtn} ${isSaved ? styles.saveBtnActive : ''}`} onClick={() => product.id != null && setSavedIds(toggleSavedProduct(product.id))}>
+                      {isSaved ? <FaHeart /> : <FaRegHeart />}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className={styles.sectionsGroup}>
+          {/* ── Full-width tabs ── */}
+          <div className={styles.tabs}>
+            <div className={styles.tabBar}>
+              <button className={`${styles.tab} ${activeTab === 'description' ? styles.tabActive : ''}`} onClick={() => setActiveTab('description')}>
+                Опис
+              </button>
+              <button className={`${styles.tab} ${activeTab === 'specs' ? styles.tabActive : ''}`} onClick={() => setActiveTab('specs')}>
+                Характеристики
+                {aiSpecs.length > 0 && <span className={styles.tabBadge}>{aiSpecs.length}</span>}
+              </button>
+              <button className={`${styles.tab} ${activeTab === 'reviews' ? styles.tabActive : ''}`} onClick={() => setActiveTab('reviews')}>
+                Відгуки
+                {reviews.length > 0 && <span className={styles.tabBadge}>{reviews.length}</span>}
+              </button>
+            </div>
 
-          <div className={styles.aiSection}>
-            <button
-              className={styles.aiHeader}
-              onClick={() => setAiOpen(o => !o)}
-              aria-expanded={aiOpen}
-            >
-              <div className={styles.aiHeaderLeft}>
-                <div className={styles.aiTitle}>Опис</div>
-                {!aiLoading && aiAdvice && (
-                  <span className={styles.aiPowered}>Згенеровано Gemini AI</span>
-                )}
-              </div>
-              <span className={styles.aiToggle}>
-                {aiOpen ? <FaChevronUp /> : <FaChevronDown />}
-              </span>
-            </button>
-
-            {aiOpen && (
-              <div className={styles.aiBody}>
-                {aiLoading ? (
-                  <div className={styles.aiLoading}>
-                    <span className={styles.aiSpinner} />
-                    <div>
-                      <div className={styles.aiLoadingTitle}>Завантажуємо опис...</div>
-                      <div className={styles.aiLoadingHint}>Gemini AI готує огляд продукту</div>
+            <div className={styles.tabContent}>
+              {activeTab === 'description' && (
+                <div className={styles.descriptionTab}>
+                  {aiLoading ? (
+                    <div className={styles.aiLoading}>
+                      <span className={styles.aiSpinner} />
+                      <div>
+                        <div className={styles.aiLoadingTitle}>Генеруємо опис...</div>
+                        <div className={styles.aiLoadingHint}>Gemini AI готує огляд продукту</div>
+                      </div>
                     </div>
-                  </div>
-                ) : aiAdvice ? (
-                  <div
-                    className={styles.aiContent}
-                    dangerouslySetInnerHTML={{ __html: renderMarkdown(aiAdvice) }}
-                  />
-                ) : (
-                  <div className={styles.description}>
-                    Оригінальний товар з офіційною гарантією від виробника. Доставка по всій Україні.
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+                  ) : aiAdvice ? (
+                    <>
+                      <div className={styles.aiPowered}>Згенеровано Gemini AI</div>
+                      <div className={styles.aiContent} dangerouslySetInnerHTML={{ __html: renderMarkdown(aiAdvice) }} />
+                    </>
+                  ) : (
+                    <p className={styles.descFallback}>Оригінальний товар з офіційною гарантією від виробника. Доставка по всій Україні.</p>
+                  )}
+                </div>
+              )}
 
-          <div className={styles.aiSection}>
-            <button
-              className={styles.aiHeader}
-              onClick={() => setSpecsOpen(o => !o)}
-              aria-expanded={specsOpen}
-            >
-              <div className={styles.aiTitle}>Характеристики</div>
-              <span className={styles.aiToggle}>
-                {specsOpen ? <FaChevronUp /> : <FaChevronDown />}
-              </span>
-            </button>
-
-            {specsOpen && (
-              <div className={styles.aiBody}>
-                <table className={styles.specs}>
-                  <tbody>
-                    {specs.map(s => (
-                      <tr key={s.label}>
-                        <td className={styles.specLabel}>{s.label}</td>
-                        <td className={styles.specValue}>{s.value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          <div id="reviews-section" className={styles.aiSection}>
-            <button
-              className={styles.aiHeader}
-              onClick={() => setReviewsOpen(o => !o)}
-              aria-expanded={reviewsOpen}
-            >
-              <div className={styles.reviewsHeaderLeft}>
-                <div className={styles.aiTitle}>Відгуки</div>
-                {reviews.length > 0 && (
-                  <div className={styles.reviewsSummary}>
-                    <span className={styles.reviewStarsDisplay}>
-                      {[1,2,3,4,5].map(s => (
-                        <span key={s} className={s <= Math.round(avgRating) ? styles.starFilled : styles.starEmpty}>★</span>
-                      ))}
-                    </span>
-                    <span className={styles.avgRating}>{avgRating.toFixed(1)}</span>
-                    <span className={styles.reviewCount}>({reviews.length})</span>
-                  </div>
-                )}
-              </div>
-              <span className={styles.aiToggle}>
-                {reviewsOpen ? <FaChevronUp /> : <FaChevronDown />}
-              </span>
-            </button>
-
-            {reviewsOpen && (
-              <div className={styles.aiBody}>
-                {reviews.length === 0 && !hasReviewed && (
-                  <p className={styles.noReviews}>Відгуків ще немає. Будьте першим!</p>
-                )}
-
-                {reviews.length > 0 && (
-                  <div className={styles.reviewsList}>
-                    {reviews.map(r => (
-                      <div key={r.id} className={styles.reviewCard}>
-                        <div className={styles.reviewMeta}>
-                          <span className={styles.reviewAuthor}>{r.user_name}</span>
-                          <span className={styles.reviewStarsDisplay}>
-                            {[1,2,3,4,5].map(s => (
-                              <span key={s} className={s <= r.rating ? styles.starFilled : styles.starEmpty}>★</span>
-                            ))}
-                          </span>
-                          <span className={styles.reviewDate}>{formatDate(r.created_at)}</span>
-                          {(r.user_id === user?.id || isAdmin) && (
-                            <button
-                              className={styles.reviewDeleteBtn}
-                              onClick={() => handleDeleteReview(r.id)}
-                              title="Видалити"
-                            >
-                              <FaTimes />
-                            </button>
-                          )}
-                        </div>
-                        {r.comment && <p className={styles.reviewComment}>{r.comment}</p>}
+              {activeTab === 'specs' && (
+                <div className={styles.specsTab}>
+                  {aiLoading ? (
+                    <div className={styles.aiLoading}>
+                      <span className={styles.aiSpinner} />
+                      <div>
+                        <div className={styles.aiLoadingTitle}>Генеруємо характеристики...</div>
+                        <div className={styles.aiLoadingHint}>Gemini AI аналізує продукт</div>
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </div>
+                  ) : aiSpecs.length > 0 ? (
+                    <>
+                      <div className={styles.aiPowered}>Згенеровано Gemini AI</div>
+                      <table className={styles.specs}>
+                        <tbody>
+                          {aiSpecs.map((s, i) => (
+                            <tr key={i}>
+                              <td className={styles.specLabel}>{s.label}</td>
+                              <td className={styles.specValue}>{s.value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </>
+                  ) : (
+                    <p className={styles.descFallback}>Характеристики для цього товару поки не доступні.</p>
+                  )}
+                </div>
+              )}
 
-                {isAuthenticated ? (
-                  hasReviewed ? (
-                    <p className={styles.alreadyReviewed}>Ви вже залишили відгук для цього товару.</p>
-                  ) : canReview === false ? (
-                    <p className={styles.reviewLoginPrompt}>
-                      Залишити відгук можуть лише покупці, які замовили цей товар.
-                    </p>
-                  ) : canReview === true ? (
-                    <form className={styles.reviewForm} onSubmit={handleSubmitReview}>
-                      <div className={styles.reviewFormTitle}>Залишити відгук</div>
-                      <div className={styles.starPicker}>
+              {activeTab === 'reviews' && (
+                <div className={styles.reviewsTab}>
+                  {reviews.length > 0 && (
+                    <div className={styles.reviewsSummary}>
+                      <span className={styles.reviewStarsDisplay}>
                         {[1,2,3,4,5].map(s => (
-                          <button
-                            key={s}
-                            type="button"
-                            className={`${styles.starPickBtn} ${s <= (reviewHover || reviewRating) ? styles.starPickActive : ''}`}
-                            onClick={() => setReviewRating(s)}
-                            onMouseEnter={() => setReviewHover(s)}
-                            onMouseLeave={() => setReviewHover(0)}
-                          >★</button>
+                          <span key={s} className={s <= Math.round(avgRating) ? styles.starFilled : styles.starEmpty}>&#9733;</span>
                         ))}
-                      </div>
-                      <textarea
-                        className={styles.reviewTextarea}
-                        value={reviewComment}
-                        onChange={e => setReviewComment(e.target.value)}
-                        placeholder="Ваш відгук (необов'язково)..."
-                        rows={3}
-                      />
-                      {reviewError && <span className={styles.reviewError}>{reviewError}</span>}
-                      <button type="submit" className={styles.reviewSubmitBtn} disabled={reviewSubmitting}>
-                        {reviewSubmitting ? 'Надсилання...' : 'Надіслати відгук'}
-                      </button>
-                    </form>
-                  ) : null
-                ) : (
-                  <p className={styles.reviewLoginPrompt}>
-                    <Link to="/login">Увійдіть</Link>, щоб залишити відгук
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
+                      </span>
+                      <span className={styles.avgRating}>{avgRating.toFixed(1)}</span>
+                      <span className={styles.reviewCount}>({reviews.length} відгуків)</span>
+                    </div>
+                  )}
 
-          </div>{/* sectionsGroup */}
+                  {reviews.length === 0 && !hasReviewed && (
+                    <p className={styles.noReviews}>Відгуків ще немає. Будьте першим!</p>
+                  )}
+
+                  {reviews.length > 0 && (
+                    <div className={styles.reviewsList}>
+                      {reviews.map(r => (
+                        <div key={r.id} className={styles.reviewCard}>
+                          <div className={styles.reviewMeta}>
+                            <span className={styles.reviewAuthor}>{r.user_name}</span>
+                            <span className={styles.reviewStarsDisplay}>
+                              {[1,2,3,4,5].map(s => (
+                                <span key={s} className={s <= r.rating ? styles.starFilled : styles.starEmpty}>&#9733;</span>
+                              ))}
+                            </span>
+                            <span className={styles.reviewDate}>{formatDate(r.created_at)}</span>
+                            {(r.user_id === user?.id || isAdmin) && (
+                              <button className={styles.reviewDeleteBtn} onClick={() => handleDeleteReview(r.id)} title="Видалити"><FaTimes /></button>
+                            )}
+                          </div>
+                          {r.comment && <p className={styles.reviewComment}>{r.comment}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {isAuthenticated ? (
+                    hasReviewed ? (
+                      <p className={styles.reviewNote}>Ви вже залишили відгук для цього товару.</p>
+                    ) : canReview === false ? (
+                      <p className={styles.reviewNote}>Залишити відгук можуть лише покупці, які замовили цей товар.</p>
+                    ) : canReview === true ? (
+                      <form className={styles.reviewForm} onSubmit={handleSubmitReview}>
+                        <div className={styles.reviewFormTitle}>Залишити відгук</div>
+                        <div className={styles.starPicker}>
+                          {[1,2,3,4,5].map(s => (
+                            <button key={s} type="button"
+                              className={`${styles.starPickBtn} ${s <= (reviewHover || reviewRating) ? styles.starPickActive : ''}`}
+                              onClick={() => setReviewRating(s)}
+                              onMouseEnter={() => setReviewHover(s)}
+                              onMouseLeave={() => setReviewHover(0)}
+                            >&#9733;</button>
+                          ))}
+                        </div>
+                        <textarea className={styles.reviewTextarea} value={reviewComment} onChange={e => setReviewComment(e.target.value)} placeholder="Ваш відгук (необов'язково)..." rows={3} />
+                        {reviewError && <span className={styles.reviewError}>{reviewError}</span>}
+                        <button type="submit" className={styles.reviewSubmitBtn} disabled={reviewSubmitting}>
+                          {reviewSubmitting ? 'Надсилання...' : 'Надіслати відгук'}
+                        </button>
+                      </form>
+                    ) : null
+                  ) : (
+                    <p className={styles.reviewNote}><Link to="/login">Увійдіть</Link>, щоб залишити відгук</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
 
           {related.length > 0 && (
             <div className={styles.related}>
-              <h3 className={styles.relatedTitle}>Схожі товари</h3>
+              <h3 className={styles.relatedTitle}>Популярне в категорії «{product.category}»</h3>
               <div className={styles.relatedGrid}>
-                {related.map(p => (
-                  <ProductCard key={p.id ?? p.name} product={p} />
-                ))}
+                {related.map(p => <ProductCard key={p.id ?? p.name} product={p} />)}
               </div>
             </div>
           )}
@@ -553,27 +414,8 @@ export default function ProductPage() {
 
       {lightbox && (
         <div className={styles.lightbox} onClick={() => setLightbox(false)}>
-          <button className={styles.lightboxClose} onClick={() => setLightbox(false)}>
-            <FaTimes />
-          </button>
-          {allImages.length > 1 && (
-            <>
-              <button
-                className={styles.lightboxPrev}
-                onClick={e => { e.stopPropagation(); setSelectedImgIdx(i => (i - 1 + allImages.length) % allImages.length); }}
-              >&#8249;</button>
-              <button
-                className={styles.lightboxNext}
-                onClick={e => { e.stopPropagation(); setSelectedImgIdx(i => (i + 1) % allImages.length); }}
-              >&#8250;</button>
-            </>
-          )}
-          <img
-            className={styles.lightboxImg}
-            src={allImages[selectedImgIdx]}
-            alt={product.name}
-            onClick={e => e.stopPropagation()}
-          />
+          <button className={styles.lightboxClose} onClick={() => setLightbox(false)}><FaTimes /></button>
+          <img className={styles.lightboxImg} src={product.img} alt={product.name} onClick={e => e.stopPropagation()} />
         </div>
       )}
 

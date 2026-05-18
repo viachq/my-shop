@@ -26,8 +26,8 @@
 }
 
 .img {
-  width: 120px;
-  height: 110px;
+  width: 160px;
+  height: 140px;
   object-fit: contain;
   display: block;
 }
@@ -44,7 +44,7 @@
   .tile {
     flex: 0 0 calc((100% - 6px) / 4);
   }
-  .img { width: 90px; height: 90px; }
+  .img { width: 120px; height: 110px; }
 }
 
 @media (max-width: 600px) {
@@ -52,6 +52,6 @@
     flex: 0 0 calc((100% - 4px) / 3);
     padding: 14px 8px 10px;
   }
-  .img { width: 70px; height: 70px; }
+  .img { width: 90px; height: 80px; }
   .name { font-size: 12px; }
 }

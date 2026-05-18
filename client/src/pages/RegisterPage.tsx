@@ -11,7 +11,7 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const [name, setName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -26,9 +26,15 @@ export default function RegisterPage() {
     setError('');
     const newFieldErrors: Record<string, string> = {};
 
-    if (!name || !email || !phone || !password || !confirmPassword) {
+    if (!fullName.trim() || !email || !phone || !password || !confirmPassword) {
       setError('Будь ласка, заповніть усі поля');
       return;
+    }
+
+    if (fullName.trim().length < 2) {
+      newFieldErrors.name = 'Мінімум 2 символи';
+    } else if (fullName.trim().length > 50) {
+      newFieldErrors.name = 'Максимум 50 символів';
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -43,6 +49,8 @@ export default function RegisterPage() {
 
     if (password.length < 6) {
       newFieldErrors.password = 'Пароль має бути не менше 6 символів';
+    } else if (!/\d/.test(password) || !/[a-zA-Zа-яА-ЯіІїЇєЄґҐ]/.test(password)) {
+      newFieldErrors.password = 'Пароль має містити літеру і цифру';
     }
 
     if (password !== confirmPassword) {
@@ -52,9 +60,9 @@ export default function RegisterPage() {
     setFieldErrors(newFieldErrors);
     if (Object.keys(newFieldErrors).length > 0) return;
 
-    const result = await register(name, email, phone, password);
-    if (result === true) {
-      navigate('/');
+    const result = await register(fullName.trim(), email, phone, password);
+    if (result === 'verify') {
+      navigate(`/check-email?email=${encodeURIComponent(email)}`);
     } else {
       setError(result);
     }
@@ -72,15 +80,17 @@ export default function RegisterPage() {
           {error && <div className={styles.error}>{error}</div>}
 
           <div className={styles.field}>
-            <label htmlFor="reg-name">Ім'я</label>
+            <label htmlFor="reg-name">Ім'я та прізвище</label>
             <input
               id="reg-name"
               type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="Ваше ім'я"
+              value={fullName}
+              onChange={e => setFullName(e.target.value)}
+              placeholder="Іван Петренко"
               autoComplete="name"
+              maxLength={50}
             />
+            {fieldErrors.name && <span className={styles.fieldError}>{fieldErrors.name}</span>}
           </div>
 
           <div className={styles.field}>

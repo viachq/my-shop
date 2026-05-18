@@ -2,12 +2,20 @@ import { createContext, useContext, useState, useCallback, useMemo, type ReactNo
 
 const API = '/api';
 
+function parseApiError(err: Record<string, unknown>, fallback: string): string {
+  if (typeof err.detail === 'string') return err.detail;
+  if (Array.isArray(err.detail)) return err.detail.map((e: { msg?: string }) => e.msg).join('; ');
+  return fallback;
+}
+
 export interface User {
   id: number;
   name: string;
   email: string;
   phone: string;
   role: string;
+  is_verified: boolean;
+  created_at: string;
 }
 
 interface AuthContextValue {
@@ -15,7 +23,7 @@ interface AuthContextValue {
   token: string | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<string | true>;
-  register: (name: string, email: string, phone: string, password: string) => Promise<string | true>;
+  register: (name: string, email: string, phone: string, password: string) => Promise<string | 'verify'>;
   logout: () => void;
   updateProfile: (data: { name?: string; phone?: string; password?: string; oldPassword?: string }) => Promise<string | true>;
 }
@@ -55,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        return err.detail || 'Невірний email або пароль';
+        return parseApiError(err, 'Невірний email або пароль');
       }
       const data = await res.json();
       saveSession(data.access_token, data.user);
@@ -65,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const register = useCallback(async (name: string, email: string, phone: string, password: string): Promise<string | true> => {
+  const register = useCallback(async (name: string, email: string, phone: string, password: string): Promise<string | 'verify'> => {
     try {
       const res = await fetch(`${API}/auth/register`, {
         method: 'POST',
@@ -74,11 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        return err.detail || 'Помилка реєстрації';
+        return parseApiError(err, 'Помилка реєстрації');
       }
-      const data = await res.json();
-      saveSession(data.access_token, data.user);
-      return true;
+      return 'verify';
     } catch {
       return 'Помилка з\'єднання з сервером';
     }
@@ -103,12 +109,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({
           name: data.name,
           phone: data.phone,
-          ...(data.password ? { password: data.password } : {}),
+          ...(data.password ? { password: data.password, old_password: data.oldPassword } : {}),
         }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        return err.detail || 'Помилка оновлення';
+        return parseApiError(err, 'Помилка оновлення');
       }
       const updated = await res.json();
       const newUser: User = { ...updated, phone: updated.phone || '' };

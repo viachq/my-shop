@@ -17,12 +17,12 @@ def list_orders(
     current_user: User = Depends(get_current_user),
 ):
     if current_user.role.value in ("superadmin", "admin", "manager"):
-        orders = db.query(Order).order_by(Order.created_at.desc()).all()
+        orders = db.query(Order).order_by(Order.id.desc()).all()
     else:
         orders = (
             db.query(Order)
             .filter(Order.user_id == current_user.id)
-            .order_by(Order.created_at.desc())
+            .order_by(Order.id.desc())
             .all()
         )
     return orders
@@ -70,7 +70,6 @@ def create_order(
         surname=body.surname,
         phone=body.phone,
         email=body.email,
-        city=body.city,
         address=body.address,
         comment=body.comment,
         payment_method=body.payment_method,

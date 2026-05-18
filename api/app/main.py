@@ -6,7 +6,6 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.database import Base, engine
 from app.routers import ai, analytics, auth, liqpay, orders, products, promocodes, reviews, users
-from app.routers import settings as settings_router
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +37,6 @@ app.include_router(orders.router, prefix="/api")
 app.include_router(liqpay.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(promocodes.router, prefix="/api")
-app.include_router(settings_router.router, prefix="/api")
 app.include_router(analytics.router, prefix="/api")
 app.include_router(ai.router, prefix="/api")
 app.include_router(reviews.router, prefix="/api")

@@ -23,7 +23,6 @@ class UserRole(str, enum.Enum):
     superadmin = "superadmin"
     admin = "admin"
     manager = "manager"
-    warehouse = "warehouse"
     customer = "customer"
 
 
@@ -45,6 +44,9 @@ class User(Base):
     phone = Column(String(50), nullable=True)
     password_hash = Column(String(255), nullable=False)
     role = Column(Enum(UserRole), default=UserRole.customer, nullable=False)
+    is_verified = Column(Boolean, default=False, nullable=False)
+    verification_token = Column(String(255), nullable=True, unique=True)
+    token_expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=func.now(), nullable=False)
 
     orders = relationship("Order", back_populates="user")
@@ -59,11 +61,12 @@ class Product(Base):
     price = Column(Numeric(10, 2), nullable=False)
     old_price = Column(Numeric(10, 2), nullable=True)
     img = Column(Text, nullable=True)
-    images = Column(JSON, default=list)
     badge = Column(String(50), nullable=True)  # "sale" or "new"
     category = Column(String(100), nullable=False, index=True)
     stock = Column(Integer, default=0, nullable=False)
-    weight = Column(String(100), nullable=True)
+    ai_description = Column(Text, nullable=True)
+    ai_specs = Column(JSON, nullable=True)
+    ai_generated_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=func.now(), nullable=False)
 
     reviews = relationship("ProductReview", back_populates="product", cascade="all, delete-orphan")
@@ -76,7 +79,6 @@ class PromoCode(Base):
     code = Column(String(50), unique=True, nullable=False, index=True)
     discount_percent = Column(Integer, nullable=True)
     discount_amount = Column(Numeric(10, 2), nullable=True)
-    min_order = Column(Numeric(10, 2), nullable=True, default=0)
     max_uses = Column(Integer, nullable=True)
     used_count = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
@@ -97,7 +99,6 @@ class Order(Base):
     surname = Column(String(255), nullable=False)
     phone = Column(String(50), nullable=False)
     email = Column(String(255), nullable=False)
-    city = Column(String(255), nullable=False)
     address = Column(Text, nullable=False)
     comment = Column(Text, nullable=True)
     payment_method = Column(String(100), nullable=False)
@@ -123,20 +124,15 @@ class ProductReview(Base):
     user = relationship("User", back_populates="reviews")
 
 
-class SiteSetting(Base):
-    __tablename__ = "site_settings"
-
-    key = Column(String(100), primary_key=True)
-    value = Column(Text, nullable=False)
-
-
 class OrderItem(Base):
     __tablename__ = "order_items"
 
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="SET NULL"), nullable=True, index=True)
     product_name = Column(String(500), nullable=False)
     qty = Column(Integer, nullable=False)
     price = Column(Numeric(10, 2), nullable=False)
 
     order = relationship("Order", back_populates="items")
+    product = relationship("Product")

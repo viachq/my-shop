@@ -26,16 +26,20 @@ def create_payment(body: PaymentRequest):
             detail="amount must be positive",
         )
 
+    amount = body.amount
+    amount_str = str(int(amount)) if float(amount).is_integer() else str(amount)
+
     data_dict = {
-        "version": 3,
+        "version": "3",
         "public_key": settings.LIQPAY_PUBLIC_KEY,
         "action": "pay",
-        "amount": body.amount,
+        "amount": amount_str,
         "currency": "UAH",
         "description": f"Замовлення #{body.order_id}",
         "order_id": str(body.order_id),
         "result_url": settings.LIQPAY_RESULT_URL,
         "server_url": settings.LIQPAY_SERVER_URL,
+        "sandbox": "1",
     }
 
     data_json = json.dumps(data_dict)
@@ -86,6 +90,9 @@ def liqpay_callback(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Order not found",
         )
+
+    if order.payment_status in ("paid", "failed"):
+        return {"status": "ok", "message": "already processed"}
 
     if payment_status in ("success", "sandbox"):
         order.payment_status = "paid"

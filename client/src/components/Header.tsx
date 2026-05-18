@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaUser, FaShoppingCart, FaBars, FaClock, FaTimes } from 'react-icons/fa';
-import { categories } from '../data/products';
+import { FaSearch, FaUser, FaShoppingCart, FaBars, FaClock, FaTimes, FaBoxOpen, FaSignOutAlt } from 'react-icons/fa';
+import { categories, catImages } from '../data/products';
 import { useCart } from '../context/CartContext';
+import { formatPrice } from '../utils/formatPrice';
 import { useAuth } from '../context/AuthContext';
 import styles from './Header.module.css';
 
@@ -25,7 +26,7 @@ function saveHistory(history: string[]) {
 export default function Header() {
   const [catOpen, setCatOpen] = useState(false);
   const { cartCount } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
@@ -129,9 +130,13 @@ export default function Header() {
                   <Link
                     to={`/catalog?cat=${encodeURIComponent(cat)}`}
                     key={cat}
+                    className={styles.dropdownItem}
                     onClick={() => setCatOpen(false)}
                   >
-                    {cat}
+                    {catImages[cat] && (
+                      <img src={catImages[cat]} alt="" className={styles.dropdownImg} />
+                    )}
+                    <span>{cat}</span>
                   </Link>
                 ))}
               </div>
@@ -179,7 +184,7 @@ export default function Header() {
                               : <div className={styles.sdImgEmpty} />
                             }
                             <span className={styles.sdProductName}>{p.name}</span>
-                            <span className={styles.sdProductPrice}>{p.price} ₴</span>
+                            <span className={styles.sdProductPrice}>{formatPrice(p.price)} ₴</span>
                           </div>
                         ))}
                       </>
@@ -196,7 +201,7 @@ export default function Header() {
                             : <div className={styles.sdImgEmpty} />
                           }
                           <span className={styles.sdProductName}>{p.name}</span>
-                          <span className={styles.sdProductPrice}>{p.price} ₴</span>
+                          <span className={styles.sdProductPrice}>{formatPrice(p.price)} ₴</span>
                         </div>
                       ))}
                     </>
@@ -208,10 +213,24 @@ export default function Header() {
 
           <div className={styles.actions}>
             {isAuthenticated ? (
-              <Link to="/profile" className={styles.actionBtn}>
-                <FaUser />
-                <span>Кабінет</span>
-              </Link>
+              <div className={styles.accountWrap}>
+                <div className={styles.actionBtn}>
+                  <FaUser />
+                  <span>Кабінет</span>
+                </div>
+                <div className={styles.accountDropdown}>
+                  <Link to="/profile" className={styles.accountItem}>
+                    <FaUser /> Особисті дані
+                  </Link>
+                  <Link to="/orders" className={styles.accountItem}>
+                    <FaBoxOpen /> Мої замовлення
+                  </Link>
+                  <div className={styles.accountDivider} />
+                  <button className={styles.accountItem} onClick={() => { logout(); navigate('/'); }}>
+                    <FaSignOutAlt /> Вийти
+                  </button>
+                </div>
+              </div>
             ) : (
               <Link to="/login" className={styles.actionBtn}>
                 <FaUser />

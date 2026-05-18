@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import TopBar from '../components/TopBar';
@@ -10,15 +10,19 @@ import styles from './LoginPage.module.css';
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [notVerified, setNotVerified] = useState(false);
+  const verified = params.get('verified') === 'true';
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    setNotVerified(false);
 
     if (!email || !password) {
       setError('Будь ласка, заповніть усі поля');
@@ -29,6 +33,9 @@ export default function LoginPage() {
     if (result === true) {
       navigate('/');
     } else {
+      if (result.includes('підтверджено')) {
+        setNotVerified(true);
+      }
       setError(result);
     }
   };
@@ -42,7 +49,22 @@ export default function LoginPage() {
           <h1 className={styles.title}>Вхід</h1>
           <p className={styles.subtitle}>Увійдіть до свого акаунту</p>
 
-          {error && <div className={styles.error}>{error}</div>}
+          {verified && !error && (
+            <div className={styles.success}>Email підтверджено! Тепер ви можете увійти.</div>
+          )}
+
+          {error && (
+            <div className={styles.error}>
+              {error}
+              {notVerified && (
+                <div style={{ marginTop: 8 }}>
+                  <Link to={`/check-email?email=${encodeURIComponent(email)}`}>
+                    Надіслати лист повторно
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className={styles.field}>
             <label htmlFor="login-email">Email</label>

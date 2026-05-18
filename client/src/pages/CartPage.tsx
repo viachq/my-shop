@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { formatPrice } from '../utils/formatPrice';
 import {
   FaTrash,
   FaShoppingCart,
   FaArrowRight,
   FaLock,
-  FaTruck,
-  FaHeadset,
   FaPlus,
   FaTag,
   FaTimes,
@@ -32,8 +31,7 @@ export default function CartPage() {
   const [promoLoading, setPromoLoading] = useState(false);
 
   const subtotal = cartTotal;
-  const delivery = 0;
-  const total = subtotal - promoDiscount + delivery;
+  const total = subtotal - promoDiscount;
 
   useEffect(() => {
     let cancelled = false;
@@ -142,7 +140,7 @@ export default function CartPage() {
                         <div className={styles.recommendBody}>
                           <div className={styles.recommendName}>{p.name}</div>
                           <div className={styles.recommendBottom}>
-                            <span className={styles.recommendPrice}>{p.price} &#8372;</span>
+                            <span className={styles.recommendPrice}>{formatPrice(p.price)} &#8372;</span>
                             <button
                               className={styles.recommendAddBtn}
                               onClick={() => addToCart(p)}
@@ -172,67 +170,76 @@ export default function CartPage() {
       <div className={styles.page}>
         <div className="container">
           <div className={styles.content}>
+            <div className={styles.itemsHeader}>
+              <span className={styles.itemsHeaderTitle}>Кошик</span>
+              <button className={styles.clearLinkBtn} onClick={clearCart}>
+                <FaTrash /> Очистити кошик
+              </button>
+            </div>
+
             <div className={styles.layout}>
               <div className={styles.itemsColumn}>
-                <div className={styles.itemsHeader}>
-                  <span className={styles.itemsHeaderTitle}>Кошик</span>
-                  <span className={styles.itemsHeaderCount}>{cartCount} товарів</span>
-                </div>
-
                 <div className={styles.itemsList}>
                   {items.map((item, idx) => {
                     const lineTotal = parseFloat(item.product.price) * item.qty;
+                    const linkId = item.product.id;
                     return (
                       <div
                         key={item.product.name}
                         className={styles.itemCard}
-                        style={{ animationDelay: `${idx * 50}ms` }}
+                        style={{ animationDelay: `${idx * 40}ms` }}
                       >
-                        <div className={styles.itemInfo}>
+                        {linkId != null ? (
+                          <Link to={`/product/${linkId}`} className={styles.itemImgWrap}>
+                            <img className={styles.itemImg} src={item.product.img} alt={item.product.name} />
+                          </Link>
+                        ) : (
                           <div className={styles.itemImgWrap}>
-                            <img
-                              className={styles.itemImg}
-                              src={item.product.img}
-                              alt={item.product.name}
-                            />
+                            <img className={styles.itemImg} src={item.product.img} alt={item.product.name} />
                           </div>
+                        )}
+
+                        <div className={styles.itemBody}>
                           <div className={styles.itemMeta}>
-                            <div className={styles.itemName}>{item.product.name}</div>
-                            <div className={styles.itemUnitPrice}>
-                              {item.product.price} &#8372; / шт.
+                            {linkId != null ? (
+                              <Link to={`/product/${linkId}`} className={styles.itemNameLink}>
+                                {item.product.name}
+                              </Link>
+                            ) : (
+                              <div className={styles.itemName}>{item.product.name}</div>
+                            )}
+                            <span className={styles.itemTotal}>{formatPrice(lineTotal)} &#8372;</span>
+                            <span className={styles.itemUnitPrice}>
+                              {formatPrice(item.product.price)} &#8372; / шт.
+                            </span>
+                          </div>
+
+                          <div className={styles.itemActions}>
+                            <div className={styles.qtyControl}>
+                              <button
+                                className={styles.qtyBtn}
+                                onClick={() => updateQty(item.product.name, item.qty - 1)}
+                                disabled={item.qty <= 1}
+                              >
+                                &minus;
+                              </button>
+                              <span className={styles.qtyValue}>{item.qty}</span>
+                              <button
+                                className={styles.qtyBtn}
+                                onClick={() => updateQty(item.product.name, item.qty + 1)}
+                              >
+                                +
+                              </button>
                             </div>
-                          </div>
-                        </div>
 
-                        <div className={styles.itemActions}>
-                          <div className={styles.qtyControl}>
                             <button
-                              className={styles.qtyBtn}
-                              onClick={() => updateQty(item.product.name, item.qty - 1)}
-                              disabled={item.qty <= 1}
+                              className={styles.removeBtn}
+                              onClick={() => removeFromCart(item.product.name)}
+                              title="Видалити"
                             >
-                              &minus;
-                            </button>
-                            <span className={styles.qtyValue}>{item.qty}</span>
-                            <button
-                              className={styles.qtyBtn}
-                              onClick={() => updateQty(item.product.name, item.qty + 1)}
-                            >
-                              +
+                              <FaTrash />
                             </button>
                           </div>
-
-                          <span className={styles.itemSubtotal}>
-                            {lineTotal.toFixed(2)} &#8372;
-                          </span>
-
-                          <button
-                            className={styles.removeBtn}
-                            onClick={() => removeFromCart(item.product.name)}
-                            title="Видалити"
-                          >
-                            <FaTrash />
-                          </button>
                         </div>
                       </div>
                     );
@@ -242,112 +249,94 @@ export default function CartPage() {
 
               <aside className={styles.summaryColumn}>
                 <div className={styles.summaryCard}>
-                  <h2 className={styles.summaryTitle}>Разом</h2>
-
-                  <div className={styles.summaryRow}>
-                    <span>Товарів</span>
-                    <span>{cartCount} шт</span>
-                  </div>
-                  <div className={styles.summaryRow}>
-                    <span>Сума</span>
-                    <span>{subtotal.toFixed(2)} &#8372;</span>
+                  <div className={styles.summaryHeader}>
+                    <h2 className={styles.summaryTitle}>Ваше замовлення</h2>
                   </div>
 
-                  {promoApplied && promoDiscount > 0 && (
-                    <div className={`${styles.summaryRow} ${styles.discountRow}`}>
-                      <span>
-                        Знижка
-                        <span className={styles.promoBadge}>
-                          <FaTag /> {promoCode}
+                  <div className={styles.summaryBody}>
+                    <div className={styles.summaryRow}>
+                      <span>Товарів</span>
+                      <span className={styles.summaryCount}>{cartCount} шт.</span>
+                    </div>
+                    <div className={styles.summaryRow}>
+                      <span>Сума</span>
+                      <span>{formatPrice(subtotal)} &#8372;</span>
+                    </div>
+
+                    {promoApplied && promoDiscount > 0 && (
+                      <div className={`${styles.summaryRow} ${styles.discountRow}`}>
+                        <span>
+                          Знижка
+                          <span className={styles.promoBadge}>
+                            <FaTag /> {promoCode}
+                          </span>
                         </span>
-                      </span>
-                      <span className={styles.discountValue}>-{promoDiscount.toFixed(2)} &#8372;</span>
-                    </div>
-                  )}
-
-                  <div className={styles.summaryRow}>
-                    <span>Доставка</span>
-                    <span className={styles.freeDelivery}>Безкоштовно</span>
-                  </div>
-                  <div className={styles.deliveryHint}>Від 80 ₴ для замовлень менше 500 ₴</div>
-
-                  {!promoApplied ? (
-                    <form className={styles.promoRow} onSubmit={handlePromoSubmit}>
-                      <div className={styles.promoInputWrap}>
-                        <FaTag className={styles.promoIcon} />
-                        <input
-                          type="text"
-                          className={styles.promoInput}
-                          placeholder="Промокод"
-                          value={promoCode}
-                          onChange={e => {
-                            setPromoCode(e.target.value);
-                            if (promoMessage) {
-                              setPromoMessage('');
-                              setPromoIsError(false);
-                            }
-                          }}
-                          disabled={promoLoading}
-                        />
+                        <span className={styles.discountValue}>-{formatPrice(promoDiscount)} &#8372;</span>
                       </div>
-                      <button type="submit" className={styles.promoBtn} disabled={promoLoading}>
-                        {promoLoading ? '...' : 'Застосувати'}
-                      </button>
-                    </form>
-                  ) : (
-                    <div className={styles.promoAppliedRow}>
-                      <span className={styles.promoAppliedText}>
-                        <FaCheck /> Промокод <strong>{promoCode}</strong> застосовано
-                      </span>
-                      <button
-                        type="button"
-                        className={styles.promoRemoveBtn}
-                        onClick={handleClearPromo}
-                        title="Видалити промокод"
-                      >
-                        <FaTimes />
-                      </button>
-                    </div>
-                  )}
-
-                  {promoMessage && !promoApplied && (
-                    <div className={promoIsError ? styles.promoError : styles.promoSuccess}>
-                      {promoMessage}
-                    </div>
-                  )}
-
-                  <div className={styles.divider} />
-
-                  <div className={styles.totalRow}>
-                    <span className={styles.totalLabel}>До сплати</span>
-                    <span className={styles.totalValue}>{total.toFixed(2)} &#8372;</span>
+                    )}
                   </div>
 
-                  <button
-                    className={styles.checkoutBtn}
-                    onClick={() => navigate('/checkout')}
-                  >
-                    <FaShoppingCart /> Оформити замовлення
-                  </button>
+                  <div className={styles.promoSection}>
+                    {!promoApplied ? (
+                      <form className={styles.promoRow} onSubmit={handlePromoSubmit}>
+                        <div className={styles.promoInputWrap}>
+                          <FaTag className={styles.promoIcon} />
+                          <input
+                            type="text"
+                            className={styles.promoInput}
+                            placeholder="Введіть промокод"
+                            value={promoCode}
+                            onChange={e => {
+                              setPromoCode(e.target.value.toUpperCase());
+                              if (promoMessage) {
+                                setPromoMessage('');
+                                setPromoIsError(false);
+                              }
+                            }}
+                            disabled={promoLoading}
+                          />
+                        </div>
+                        <button type="submit" className={styles.promoBtn} disabled={promoLoading}>
+                          {promoLoading ? '...' : 'Ок'}
+                        </button>
+                      </form>
+                    ) : (
+                      <div className={styles.promoAppliedRow}>
+                        <span className={styles.promoAppliedText}>
+                          <FaCheck /> <strong>{promoCode}</strong> застосовано
+                        </span>
+                        <button
+                          type="button"
+                          className={styles.promoRemoveBtn}
+                          onClick={handleClearPromo}
+                          title="Видалити промокод"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    )}
 
-                  <button className={styles.clearLinkBtn} onClick={clearCart}>
-                    Очистити кошик
-                  </button>
-
-                  <div className={styles.trustRow}>
-                    <div className={styles.trustItem}>
-                      <div className={styles.trustIcon}><FaLock /></div>
-                      <span>Безпечна оплата</span>
-                    </div>
-                    <div className={styles.trustItem}>
-                      <div className={styles.trustIcon}><FaTruck /></div>
-                      <span>Швидка доставка</span>
-                    </div>
-                    <div className={styles.trustItem}>
-                      <div className={styles.trustIcon}><FaHeadset /></div>
-                      <span>Підтримка 24/7</span>
-                    </div>
+                    {promoMessage && !promoApplied && (
+                      <div className={promoIsError ? styles.promoError : styles.promoSuccess}>
+                        {promoMessage}
+                      </div>
+                    )}
                   </div>
+
+                  <div className={styles.totalSection}>
+                    <div className={styles.totalRow}>
+                      <span className={styles.totalLabel}>До сплати</span>
+                      <span className={styles.totalValue}>{formatPrice(total)} &#8372;</span>
+                    </div>
+
+                    <button
+                      className={styles.checkoutBtn}
+                      onClick={() => navigate('/checkout')}
+                    >
+                      <FaLock /> Оформити замовлення
+                    </button>
+                  </div>
+
                 </div>
               </aside>
             </div>

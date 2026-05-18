@@ -1,21 +1,24 @@
 .section {
-  padding: 40px 0 64px;
+  padding: 48px 0 72px;
 }
 
 .header {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
+  margin-bottom: 28px;
   gap: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 18px;
 }
 
 .title {
-  font-size: 26px;
+  font-size: 32px;
   font-weight: 900;
   color: var(--fg);
-  letter-spacing: -0.3px;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin: 0;
 }
 
 .title span {
@@ -25,15 +28,21 @@
 .moreLink {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 8px;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--red);
+  color: var(--text);
   text-decoration: none;
-  transition: opacity 0.15s;
+  transition: color 0.15s;
+  white-space: nowrap;
+  padding-bottom: 1px;
+  border-bottom: 1px solid transparent;
 }
 
-.moreLink:hover { opacity: 0.75; }
+.moreLink:hover {
+  color: var(--fg);
+  border-bottom-color: var(--border);
+}
 
 .grid {
   display: grid;
@@ -48,11 +57,10 @@
 @media (max-width: 1200px) {
   .grid { grid-template-columns: repeat(4, 1fr); }
 }
-
 @media (max-width: 900px) {
   .grid { grid-template-columns: repeat(3, 1fr); }
+  .title { font-size: 26px; }
 }
-
 @media (max-width: 600px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
   .title { font-size: 22px; }

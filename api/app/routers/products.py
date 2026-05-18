@@ -67,6 +67,29 @@ def _with_ratings(products: list[Product], rmap: dict[int, tuple[float, int]]) -
     return result
 
 
+@router.get("/popular")
+def popular_products(
+    limit: int = Query(25, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    popularity = dict(
+        db.query(OrderItem.product_name, func.sum(OrderItem.qty).label("total"))
+        .group_by(OrderItem.product_name)
+        .all()
+    )
+
+    products = db.query(Product).all()
+    rmap = _rating_map(db, [p.id for p in products])
+
+    def sort_key(p: Product) -> tuple:
+        orders = popularity.get(p.name, 0)
+        avg, _ = rmap.get(p.id, (0, 0))
+        return (-orders, -(avg or 0))
+
+    products.sort(key=sort_key)
+    return _with_ratings(products[:limit], rmap)
+
+
 @router.get("/")
 def list_products(
     category: str | None = Query(None),
@@ -81,8 +104,16 @@ def list_products(
         q = q.filter(Product.badge == badge)
     if search:
         q = q.filter(Product.name.ilike(f"%{search}%"))
-    products = q.order_by(Product.created_at.desc()).all()
+    products = q.all()
     rmap = _rating_map(db, [p.id for p in products])
+
+    popularity = dict(
+        db.query(OrderItem.product_name, func.sum(OrderItem.qty).label("total"))
+        .group_by(OrderItem.product_name)
+        .all()
+    )
+    products.sort(key=lambda p: (-popularity.get(p.name, 0), -(rmap.get(p.id, (0, 0))[0] or 0)))
+
     return _with_ratings(products, rmap)
 
 
@@ -99,7 +130,7 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
 def create_product(
     body: ProductCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("superadmin", "admin", "warehouse")),
+    current_user: User = Depends(require_roles("superadmin", "admin", "manager")),
 ):
     product = Product(**body.model_dump())
     db.add(product)
@@ -113,7 +144,7 @@ def update_product(
     product_id: int,
     body: ProductUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("superadmin", "admin", "warehouse")),
+    current_user: User = Depends(require_roles("superadmin", "admin", "manager")),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:

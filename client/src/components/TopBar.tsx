@@ -13,10 +13,10 @@ export default function TopBar() {
         </div>
         <div className={styles.right}>
           <div className={styles.social}>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><FaInstagram /></a>
-            <a href="https://t.me" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><FaTelegramPlane /></a>
-            <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><FaTiktok /></a>
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><FaFacebookF /></a>
+            <a href="https://www.instagram.com/techbox_ua" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><FaInstagram /></a>
+            <a href="https://t.me/techbox_ua" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><FaTelegramPlane /></a>
+            <a href="https://www.tiktok.com/@techbox_ua" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><FaTiktok /></a>
+            <a href="https://www.facebook.com/techbox.ua" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><FaFacebookF /></a>
             <button
               className={styles.themeBtn}
               onClick={toggle}

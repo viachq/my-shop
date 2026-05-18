@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FaCartPlus, FaCheck } from 'react-icons/fa';
 import type { Product } from '../data/products';
 import { useCart } from '../context/CartContext';
+import { formatPrice } from '../utils/formatPrice';
 import styles from './ProductCard.module.css';
 
 export function loadSavedProducts(): number[] {
@@ -66,8 +67,8 @@ export default function ProductCard({ product, productIndex }: Props) {
           </div>
         )}
         <div className={styles.price}>
-          <span className={styles.current}>{product.price} ₴</span>
-          {product.oldPrice && <span className={styles.old}>{product.oldPrice} ₴</span>}
+          <span className={styles.current}>{formatPrice(product.price)} ₴</span>
+          {product.oldPrice && <span className={styles.old}>{formatPrice(product.oldPrice)} ₴</span>}
         </div>
       </div>
     </div>

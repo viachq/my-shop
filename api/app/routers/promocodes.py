@@ -20,7 +20,7 @@ router = APIRouter(prefix="/promocodes", tags=["Promo Codes"])
 # ── Helper ────────────────────────────────────────────────────────────
 def validate_promo(db: Session, code: str, order_total: Decimal) -> tuple[bool, Decimal, str]:
     """Validate a promo code and return (valid, discount, message)."""
-    promo = db.query(PromoCode).filter(PromoCode.code == code).first()
+    promo = db.query(PromoCode).filter(PromoCode.code == code.upper()).first()
     if not promo:
         return False, Decimal("0"), "Промокод не знайдено"
     if not promo.is_active:
@@ -29,9 +29,6 @@ def validate_promo(db: Session, code: str, order_total: Decimal) -> tuple[bool, 
         return False, Decimal("0"), "Термін дії промокоду закінчився"
     if promo.max_uses is not None and promo.used_count >= promo.max_uses:
         return False, Decimal("0"), "Промокод вичерпано"
-    min_order = promo.min_order or Decimal("0")
-    if order_total < min_order:
-        return False, Decimal("0"), f"Мінімальна сума замовлення для цього промокоду: {min_order} грн"
 
     if promo.discount_percent:
         discount = (order_total * promo.discount_percent / 100).quantize(Decimal("0.01"))
@@ -47,7 +44,7 @@ def validate_promo(db: Session, code: str, order_total: Decimal) -> tuple[bool, 
 
 def increment_promo_usage(db: Session, code: str) -> None:
     """Increment used_count for a promo code."""
-    promo = db.query(PromoCode).filter(PromoCode.code == code).first()
+    promo = db.query(PromoCode).filter(PromoCode.code == code.upper()).first()
     if promo:
         promo.used_count += 1
 

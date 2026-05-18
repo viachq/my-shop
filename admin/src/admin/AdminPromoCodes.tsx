@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaTimes, FaTag, FaCheckCircle, FaTimesCircle, FaRedo } from 'react-icons/fa';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { FaPlus, FaEdit, FaTrash, FaTimes, FaTag, FaCheckCircle, FaTimesCircle, FaRedo, FaSearch } from 'react-icons/fa';
 import styles from './AdminPromoCodes.module.css';
 
 /* ── API helpers ─────────────────────────────────────────── */
@@ -20,7 +20,6 @@ interface PromoCode {
   code: string;
   discount_percent: number | null;
   discount_amount: number | null;
-  min_order: number | null;
   max_uses: number | null;
   used_count: number;
   is_active: boolean;
@@ -32,7 +31,6 @@ type PromoFormData = {
   code: string;
   discount_percent: number | '';
   discount_amount: number | '';
-  min_order: number | '';
   max_uses: number | '';
   is_active: boolean;
   expires_at: string;
@@ -42,7 +40,6 @@ const emptyForm: PromoFormData = {
   code: '',
   discount_percent: '',
   discount_amount: '',
-  min_order: '',
   max_uses: '',
   is_active: true,
   expires_at: '',
@@ -78,6 +75,9 @@ export default function AdminPromoCodes() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<PromoCode | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'expired'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'percent' | 'fixed'>('all');
+  const [search, setSearch] = useState('');
 
   const fetchCodes = useCallback(async () => {
     try {
@@ -115,51 +115,94 @@ export default function AdminPromoCodes() {
   const closeModal = () => { setEditing(null); setModalOpen(false); };
   const handleSaved = async () => { closeModal(); await fetchCodes(); };
 
-  /* Stats */
   const total = codes.length;
   const active = codes.filter(p => promoStatus(p) === 'active').length;
   const expired = codes.filter(p => promoStatus(p) === 'expired').length;
   const totalUses = codes.reduce((s, p) => s + p.used_count, 0);
 
+  const filtered = useMemo(() => {
+    let list = codes;
+    if (statusFilter === 'active') list = list.filter(p => promoStatus(p) === 'active');
+    if (statusFilter === 'expired') list = list.filter(p => promoStatus(p) === 'expired');
+    if (typeFilter === 'percent') list = list.filter(p => p.discount_percent != null);
+    if (typeFilter === 'fixed') list = list.filter(p => p.discount_amount != null);
+    if (search) list = list.filter(p => p.code.toLowerCase().includes(search.toLowerCase()));
+    return list;
+  }, [codes, statusFilter, typeFilter, search]);
+
   return (
     <>
       <div className={styles.topBar}>
-        <h1 className={styles.title}>Промокоди</h1>
-        <span className={styles.count}>Всього: <strong>{total}</strong></span>
+        <div className={styles.searchWrap}>
+          <FaSearch className={styles.searchIcon} />
+          <input
+            className={styles.searchInput}
+            placeholder="Пошук за кодом..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <div className={styles.filterGroup}>
+          <button
+            className={`${styles.filterBtn} ${statusFilter === 'all' ? styles.filterActive : ''}`}
+            onClick={() => setStatusFilter('all')}
+          >Всі</button>
+          <button
+            className={`${styles.filterBtn} ${statusFilter === 'active' ? styles.filterActive : ''}`}
+            onClick={() => setStatusFilter('active')}
+          >Активні</button>
+          <button
+            className={`${styles.filterBtn} ${statusFilter === 'expired' ? styles.filterActive : ''}`}
+            onClick={() => setStatusFilter('expired')}
+          >Прострочені</button>
+        </div>
+        <div className={styles.filterGroup}>
+          <button
+            className={`${styles.filterBtn} ${typeFilter === 'all' ? styles.filterActive : ''}`}
+            onClick={() => setTypeFilter('all')}
+          >Всі типи</button>
+          <button
+            className={`${styles.filterBtn} ${typeFilter === 'percent' ? styles.filterActive : ''}`}
+            onClick={() => setTypeFilter('percent')}
+          >Відсоток</button>
+          <button
+            className={`${styles.filterBtn} ${typeFilter === 'fixed' ? styles.filterActive : ''}`}
+            onClick={() => setTypeFilter('fixed')}
+          >Фіксована</button>
+        </div>
         <button className={styles.addBtn} onClick={openAdd}>
           <FaPlus /> Додати промокод
         </button>
       </div>
 
       <div className={styles.content}>
-        {/* Stats */}
         <div className={styles.statsStrip}>
           <div className={styles.statCard}>
-            <div className={`${styles.statIcon} ${styles.tone_teal}`}><FaTag /></div>
-            <div className={styles.statBody}>
+            <div className={styles.statIcon}><FaTag /></div>
+            <div className={styles.statInfo}>
               <div className={styles.statValue}>{total}</div>
               <div className={styles.statLabel}>Всього кодів</div>
             </div>
           </div>
           <div className={styles.statCard}>
-            <div className={`${styles.statIcon} ${styles.tone_green}`}><FaCheckCircle /></div>
-            <div className={styles.statBody}>
+            <div className={styles.statIcon}><FaCheckCircle /></div>
+            <div className={styles.statInfo}>
               <div className={styles.statValue}>{active}</div>
-              <div className={styles.statLabel}>Активних</div>
+              <div className={styles.statLabel}>Активні</div>
             </div>
           </div>
           <div className={styles.statCard}>
-            <div className={`${styles.statIcon} ${styles.tone_red}`}><FaTimesCircle /></div>
-            <div className={styles.statBody}>
+            <div className={styles.statIcon}><FaTimesCircle /></div>
+            <div className={styles.statInfo}>
               <div className={styles.statValue}>{expired}</div>
-              <div className={styles.statLabel}>Прострочених</div>
+              <div className={styles.statLabel}>Прострочені</div>
             </div>
           </div>
           <div className={styles.statCard}>
-            <div className={`${styles.statIcon} ${styles.tone_purple}`}><FaRedo /></div>
-            <div className={styles.statBody}>
+            <div className={styles.statIcon}><FaRedo /></div>
+            <div className={styles.statInfo}>
               <div className={styles.statValue}>{totalUses}</div>
-              <div className={styles.statLabel}>Загальних використань</div>
+              <div className={styles.statLabel}>Використань</div>
             </div>
           </div>
         </div>
@@ -167,47 +210,55 @@ export default function AdminPromoCodes() {
         {/* Table */}
         {loading ? (
           <div className={styles.empty}>Завантаження...</div>
-        ) : codes.length === 0 ? (
-          <div className={styles.empty}>Промокодів ще немає</div>
+        ) : filtered.length === 0 ? (
+          <div className={styles.empty}>{codes.length === 0 ? 'Промокодів ще немає' : 'Нічого не знайдено'}</div>
         ) : (
           <div className={styles.tableWrap}>
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Код</th>
-                  <th>Тип</th>
-                  <th>Значення</th>
-                  <th>Мін. замовлення</th>
-                  <th>Використання</th>
+                  <th>Промокод</th>
+                  <th>Знижка</th>
+                  <th>Використано</th>
                   <th>Статус</th>
-                  <th>Діє до</th>
-                  <th>Дії</th>
+                  <th>Створено</th>
+                  <th>Термін дії</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
-                {codes.map(p => {
+                {filtered.map(p => {
                   const st = promoStatus(p);
                   const isPercent = p.discount_percent != null;
                   return (
                     <tr key={p.id}>
-                      <td className={styles.codeCell}>{p.code}</td>
                       <td>
-                        <span className={`${styles.badge} ${isPercent ? styles.badgePercent : styles.badgeFixed}`}>
-                          {isPercent ? '%' : '₴'}
+                        <span className={styles.codeCell}>{p.code}</span>
+                      </td>
+                      <td>
+                        <span className={`${styles.discountBadge} ${isPercent ? styles.discountPercent : styles.discountFixed}`}>
+                          {isPercent ? `-${p.discount_percent}%` : `-${p.discount_amount} ₴`}
                         </span>
                       </td>
-                      <td>{isPercent ? `${p.discount_percent}%` : `${p.discount_amount} ₴`}</td>
-                      <td>{p.min_order != null ? `${p.min_order} ₴` : '—'}</td>
                       <td className={styles.usesCell}>
-                        {p.used_count} / {p.max_uses != null ? p.max_uses : '∞'}
+                        <span className={styles.usesCount}>{p.used_count}</span>
+                        <span className={styles.usesSep}>/</span>
+                        <span className={styles.usesMax}>{p.max_uses != null ? p.max_uses : '∞'}</span>
                       </td>
                       <td>
-                        <span className={`${styles.badge} ${
-                          st === 'active' ? styles.statusActive :
-                          st === 'expired' ? styles.statusExpired : styles.statusInactive
+                        <span className={`${styles.statusBadge} ${
+                          st === 'active' ? styles.statusBadgeActive :
+                          st === 'expired' ? styles.statusBadgeExpired : styles.statusBadgeInactive
                         }`}>
+                          <span className={`${styles.statusDot} ${
+                            st === 'active' ? styles.dotActive :
+                            st === 'expired' ? styles.dotExpired : styles.dotInactive
+                          }`} />
                           {STATUS_LABEL[st]}
                         </span>
+                      </td>
+                      <td className={styles.dateCell}>
+                        {formatDate(p.created_at)}
                       </td>
                       <td className={styles.dateCell}>
                         {p.expires_at ? formatDate(p.expires_at) : 'Безстроково'}
@@ -252,13 +303,17 @@ function PromoModal({ promo, onSave, onClose }: {
 }) {
   const isEdit = promo !== null;
 
+  const [discountType, setDiscountType] = useState<'percent' | 'fixed'>(() => {
+    if (promo && promo.discount_amount != null) return 'fixed';
+    return 'percent';
+  });
+
   const [form, setForm] = useState<PromoFormData>(() => {
     if (promo) {
       return {
         code: promo.code,
         discount_percent: promo.discount_percent ?? '',
         discount_amount: promo.discount_amount ?? '',
-        min_order: promo.min_order ?? '',
         max_uses: promo.max_uses ?? '',
         is_active: promo.is_active,
         expires_at: promo.expires_at ? promo.expires_at.slice(0, 10) : '',
@@ -280,16 +335,15 @@ function PromoModal({ promo, onSave, onClose }: {
 
     const body = {
       code: form.code.trim().toUpperCase(),
-      discount_percent: form.discount_percent === '' ? null : Number(form.discount_percent),
-      discount_amount: form.discount_amount === '' ? null : Number(form.discount_amount),
-      min_order: form.min_order === '' ? null : Number(form.min_order),
+      discount_percent: discountType === 'percent' && form.discount_percent !== '' ? Number(form.discount_percent) : null,
+      discount_amount: discountType === 'fixed' && form.discount_amount !== '' ? Number(form.discount_amount) : null,
       max_uses: form.max_uses === '' ? null : Number(form.max_uses),
       is_active: form.is_active,
       expires_at: form.expires_at || null,
     };
 
     if (!body.discount_percent && !body.discount_amount) {
-      setError('Вкажіть відсоток або фіксовану знижку');
+      setError('Вкажіть значення знижки');
       setSaving(false);
       return;
     }
@@ -332,49 +386,56 @@ function PromoModal({ promo, onSave, onClose }: {
             <div className={styles.field}>
               <label className={styles.label}>Код</label>
               <input
-                className={styles.input}
+                className={`${styles.input} ${styles.inputCode}`}
                 value={form.code}
                 onChange={e => set('code', e.target.value)}
                 placeholder="SALE20"
                 required
-                style={{ textTransform: 'uppercase', fontFamily: 'monospace', fontWeight: 700 }}
               />
             </div>
 
-            <div className={styles.row}>
-              <div className={styles.field}>
-                <label className={styles.label}>Знижка (%)</label>
-                <input
-                  className={styles.input}
-                  type="number" min="0" max="100"
-                  value={form.discount_percent}
-                  onChange={e => set('discount_percent', e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
-                  placeholder="10"
-                />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>Знижка (грн)</label>
-                <input
-                  className={styles.input}
-                  type="number" min="0" step="0.01"
-                  value={form.discount_amount}
-                  onChange={e => set('discount_amount', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
-                  placeholder="50"
-                />
+            <div className={styles.field}>
+              <label className={styles.label}>Тип знижки</label>
+              <div className={styles.toggleGroup}>
+                <button
+                  type="button"
+                  className={`${styles.toggleBtn} ${discountType === 'percent' ? styles.toggleActive : ''}`}
+                  onClick={() => setDiscountType('percent')}
+                >Відсоток (%)</button>
+                <button
+                  type="button"
+                  className={`${styles.toggleBtn} ${discountType === 'fixed' ? styles.toggleActive : ''}`}
+                  onClick={() => setDiscountType('fixed')}
+                >Фіксована (₴)</button>
               </div>
             </div>
 
-            <div className={styles.row}>
-              <div className={styles.field}>
-                <label className={styles.label}>Мін. замовлення (грн)</label>
+            <div className={styles.field}>
+              <label className={styles.label}>
+                {discountType === 'percent' ? 'Знижка (%)' : 'Знижка (грн)'}
+              </label>
+              {discountType === 'percent' ? (
                 <input
                   className={styles.input}
-                  type="number" min="0" step="0.01"
-                  value={form.min_order}
-                  onChange={e => set('min_order', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
-                  placeholder="Без обмежень"
+                  type="number" min="1" max="100"
+                  value={form.discount_percent}
+                  onChange={e => set('discount_percent', e.target.value === '' ? '' : parseInt(e.target.value) || 0)}
+                  placeholder="10"
+                  required
                 />
-              </div>
+              ) : (
+                <input
+                  className={styles.input}
+                  type="number" min="1" step="0.01"
+                  value={form.discount_amount}
+                  onChange={e => set('discount_amount', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
+                  placeholder="50"
+                  required
+                />
+              )}
+            </div>
+
+            <div className={styles.row}>
               <div className={styles.field}>
                 <label className={styles.label}>Макс. використань</label>
                 <input
@@ -385,16 +446,16 @@ function PromoModal({ promo, onSave, onClose }: {
                   placeholder="Безліміт"
                 />
               </div>
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>Діє до</label>
-              <input
-                className={styles.input}
-                type="date"
-                value={form.expires_at}
-                onChange={e => set('expires_at', e.target.value)}
-              />
+              <div className={styles.field}>
+                <label className={styles.label}>Діє до</label>
+                <input
+                  className={styles.input}
+                  type="date"
+                  value={form.expires_at}
+                  onChange={e => set('expires_at', e.target.value)}
+                  style={{ colorScheme: 'dark' }}
+                />
+              </div>
             </div>
 
             <div className={styles.checkRow}>

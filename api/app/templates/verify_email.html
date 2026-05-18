@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0; padding:0; background:#0e0e0e; font-family:Arial, Helvetica, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0e0e0e; padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#1a1a1a; border-radius:12px; overflow:hidden; border:1px solid #2a2a2a;">
+          <!-- Header -->
+          <tr>
+            <td style="padding:28px 32px; text-align:center; border-bottom:1px solid #2a2a2a;">
+              <span style="font-size:26px; font-weight:900; color:#ffffff; letter-spacing:-0.5px;">Tech</span><span style="font-size:26px; font-weight:900; color:#c42a2c; letter-spacing:-0.5px;">Box</span>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:36px 32px 28px;">
+              <h1 style="margin:0 0 16px; font-size:20px; font-weight:800; color:#ffffff;">
+                Підтвердіть вашу email адресу
+              </h1>
+              <p style="margin:0 0 28px; font-size:14px; line-height:1.7; color:#999999;">
+                Привіт, {{ name }}! Дякуємо за реєстрацію в TechBox. Натисніть кнопку нижче, щоб підтвердити вашу email адресу.
+              </p>
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="border-radius:8px; background:#c42a2c;">
+                          <a href="{{ verification_url }}" target="_blank"
+                             style="display:inline-block; padding:14px 40px; font-size:14px; font-weight:700; color:#ffffff; text-decoration:none; letter-spacing:0.3px;">
+                            Підтвердити email
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:28px 0 8px; font-size:12px; line-height:1.5; color:#666666;">
+                Якщо кнопка не працює, скопіюйте це посилання у браузер:
+              </p>
+              <p style="margin:0 0 28px; font-size:12px; line-height:1.5; color:#c42a2c; word-break:break-all;">
+                {{ verification_url }}
+              </p>
+              <p style="margin:0; font-size:12px; color:#555555; line-height:1.5;">
+                Посилання дійсне 24 години. Якщо ви не реєструвалися на TechBox, просто проігноруйте цей лист.
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:16px 32px; border-top:1px solid #2a2a2a; text-align:center;">
+              <p style="margin:0; font-size:11px; color:#555555;">&copy; 2026 TechBox. Усі права захищені.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

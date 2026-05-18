@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaShoppingCart, FaUserPlus, FaSignInAlt } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
+import { formatPrice } from '../utils/formatPrice';
 import { useAuth } from '../context/AuthContext';
 import TopBar from '../components/TopBar';
 import Header from '../components/Header';
@@ -14,12 +15,9 @@ export default function CheckoutPage() {
   const finalTotal = promoApplied ? cartTotal - promoDiscount : cartTotal;
   const navigate = useNavigate();
 
-  const nameParts = user?.name?.split(' ') ?? [];
-  const [name, setName] = useState(nameParts[0] ?? '');
-  const [surname, setSurname] = useState(nameParts.slice(1).join(' '));
+  const [fullName, setFullName] = useState(user?.name ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
-  const [city, setCity] = useState('');
   const [address, setAddress] = useState('');
   const [comment, setComment] = useState('');
   const [payment, setPayment] = useState('cash');
@@ -66,12 +64,15 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
 
+    const spaceIdx = fullName.trim().indexOf(' ');
+    const orderName = spaceIdx > 0 ? fullName.trim().slice(0, spaceIdx) : fullName.trim();
+    const orderSurname = spaceIdx > 0 ? fullName.trim().slice(spaceIdx + 1) : '';
+
     const orderBody: Record<string, unknown> = {
-      name,
-      surname,
+      name: orderName,
+      surname: orderSurname,
       phone,
       email,
-      city,
       address,
       comment: comment || null,
       payment_method: payment === 'card' ? 'card' : 'cash',
@@ -175,33 +176,18 @@ export default function CheckoutPage() {
             <div className={styles.formSection}>
               <h2 className={styles.formTitle}>Контактні дані</h2>
 
-              <div className={styles.fieldRow}>
-                <div className={styles.field}>
-                  <label className={styles.label}>
-                    Ім'я<span className={styles.required}>*</span>
-                  </label>
-                  <input
-                    className={styles.input}
-                    type="text"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    required
-                    placeholder="Ваше ім'я"
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label className={styles.label}>
-                    Прізвище<span className={styles.required}>*</span>
-                  </label>
-                  <input
-                    className={styles.input}
-                    type="text"
-                    value={surname}
-                    onChange={e => setSurname(e.target.value)}
-                    required
-                    placeholder="Ваше прізвище"
-                  />
-                </div>
+              <div className={styles.field}>
+                <label className={styles.label}>
+                  Ім'я та прізвище<span className={styles.required}>*</span>
+                </label>
+                <input
+                  className={styles.input}
+                  type="text"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  required
+                  placeholder="Петро Порошенко"
+                />
               </div>
 
               <div className={styles.fieldRow}>
@@ -237,33 +223,18 @@ export default function CheckoutPage() {
 
               <h2 className={styles.formTitle}>Адреса доставки</h2>
 
-              <div className={styles.fieldRow}>
-                <div className={styles.field}>
-                  <label className={styles.label}>
-                    Місто<span className={styles.required}>*</span>
-                  </label>
-                  <input
-                    className={styles.input}
-                    type="text"
-                    value={city}
-                    onChange={e => setCity(e.target.value)}
-                    required
-                    placeholder="Місто доставки"
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label className={styles.label}>
-                    Адреса<span className={styles.required}>*</span>
-                  </label>
-                  <input
-                    className={styles.input}
-                    type="text"
-                    value={address}
-                    onChange={e => setAddress(e.target.value)}
-                    required
-                    placeholder="Вулиця, будинок, квартира"
-                  />
-                </div>
+              <div className={styles.field}>
+                <label className={styles.label}>
+                  Адреса<span className={styles.required}>*</span>
+                </label>
+                <input
+                  className={styles.input}
+                  type="text"
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                  required
+                  placeholder="м. Київ, вул. Хрещатик, 1, кв. 5"
+                />
               </div>
 
               <div className={styles.field}>
@@ -319,11 +290,11 @@ export default function CheckoutPage() {
                       <div className={styles.summaryItemInfo}>
                         <div className={styles.summaryItemName}>{item.product.name}</div>
                         <div className={styles.summaryItemQty}>
-                          {item.qty} x {item.product.price} &#8372;
+                          {item.qty} x {formatPrice(item.product.price)} &#8372;
                         </div>
                       </div>
                       <div className={styles.summaryItemPrice}>
-                        {subtotal.toFixed(2)} &#8372;
+                        {formatPrice(subtotal)} &#8372;
                       </div>
                     </div>
                   );
@@ -343,7 +314,7 @@ export default function CheckoutPage() {
                 <div className={styles.summaryRow}>
                   <span className={styles.summaryLabel}>Знижка ({promoCode}):</span>
                   <span className={styles.summaryValue} style={{ color: '#16a34a', fontWeight: 700 }}>
-                    -{promoDiscount.toFixed(2)} &#8372;
+                    -{formatPrice(promoDiscount)} &#8372;
                   </span>
                 </div>
               )}
@@ -351,7 +322,7 @@ export default function CheckoutPage() {
               <div className={styles.summaryTotalRow}>
                 <span className={styles.summaryTotalLabel}>Разом:</span>
                 <span className={styles.summaryTotalValue}>
-                  {finalTotal.toFixed(2)} &#8372;
+                  {formatPrice(finalTotal)} &#8372;
                 </span>
               </div>
 

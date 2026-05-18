@@ -14,10 +14,8 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
 from app.database import Base
-from app.models import User, Product, Order, OrderItem  # noqa: F401
+from app.models import User, Product, Order, OrderItem, PromoCode, ProductReview  # noqa: F401
 
 target_metadata = Base.metadata
 

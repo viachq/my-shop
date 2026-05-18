@@ -14,6 +14,16 @@ class Settings(BaseSettings):
 
     GEMINI_API_KEY: str = ""
 
+    MAIL_USERNAME: str = ""
+    MAIL_PASSWORD: str = ""
+    MAIL_FROM: str = "noreply@techbox.com"
+    MAIL_PORT: int = 587
+    MAIL_SERVER: str = "smtp.gmail.com"
+    MAIL_STARTTLS: bool = True
+    MAIL_SSL_TLS: bool = False
+
+    FRONTEND_URL: str = "http://localhost:5182"
+
     CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://localhost:3001",

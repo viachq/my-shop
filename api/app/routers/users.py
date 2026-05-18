@@ -1,22 +1,44 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func as sa_func
 from sqlalchemy.orm import Session
 
-from app.auth import hash_password
+from app.auth import hash_password, verify_password
 from app.deps import get_current_user, get_db, require_roles
-from app.models import User, UserRole
-from app.schemas import UserOut, UserProfileUpdate, UserUpdate
+from app.models import Order, User, UserRole
+from app.schemas import UserOut, UserProfileUpdate, UserUpdate, UserWithStats
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 STAFF_ROLES = {"superadmin", "admin"}
 
 
-@router.get("/", response_model=list[UserOut])
+@router.get("/", response_model=list[UserWithStats])
 def list_users(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("superadmin", "admin")),
 ):
-    return db.query(User).order_by(User.created_at.desc()).all()
+    order_stats = (
+        db.query(
+            Order.user_id,
+            sa_func.count(Order.id).label("order_count"),
+            sa_func.coalesce(sa_func.sum(Order.total), 0).label("total_spent"),
+        )
+        .group_by(Order.user_id)
+        .subquery()
+    )
+    rows = (
+        db.query(User, order_stats.c.order_count, order_stats.c.total_spent)
+        .outerjoin(order_stats, User.id == order_stats.c.user_id)
+        .order_by(User.created_at.desc())
+        .all()
+    )
+    result = []
+    for user, order_count, total_spent in rows:
+        data = UserWithStats.model_validate(user)
+        data.order_count = order_count or 0
+        data.total_spent = total_spent or 0
+        result.append(data)
+    return result
 
 
 @router.get("/me", response_model=UserOut)
@@ -40,6 +62,10 @@ def update_my_profile(
     if body.phone is not None:
         current_user.phone = body.phone
     if body.password is not None:
+        if not body.old_password:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Введіть старий пароль")
+        if not verify_password(body.old_password, current_user.password_hash):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Невірний старий пароль")
         current_user.password_hash = hash_password(body.password)
     db.commit()
     db.refresh(current_user)

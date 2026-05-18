@@ -23,6 +23,7 @@
 }
 .logo span {
   color: var(--red);
+  font-size: 1.03em;
 }
 
 /* Catalog button — Jabko gradient border style */
@@ -53,23 +54,37 @@
   top: 100%;
   left: 0;
   background: var(--bg-card);
-  min-width: 260px;
+  width: 230px;
   border: 1px solid var(--border);
+  border-radius: var(--radius);
   z-index: 50;
-  padding: 8px 0;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
 }
-.dropdown a {
-  display: block;
+.dropdownItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
   color: var(--text);
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
+  border-radius: calc(var(--radius) - 2px);
   transition: color .15s, background .15s;
 }
-.dropdown a:hover {
+.dropdownItem:hover {
   color: var(--fg);
   background: var(--surface-hover);
+}
+.dropdownImg {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 /* Search */
@@ -221,6 +236,70 @@
   background: var(--bg-elevated);
   border-color: var(--border-hover);
 }
+/* Account dropdown */
+.accountWrap {
+  position: relative;
+  cursor: default;
+}
+
+.accountWrap:hover .accountDropdown {
+  display: flex;
+}
+
+.accountWrap > .actionBtn {
+  cursor: default;
+}
+
+.accountDropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 200px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  z-index: 50;
+  flex-direction: column;
+  padding: 4px;
+}
+
+.accountDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+.accountItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: calc(var(--radius) - 2px);
+  transition: color .15s, background .15s;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  width: 100%;
+}
+
+.accountItem:hover {
+  color: var(--fg);
+  background: var(--surface-hover);
+}
+
+.accountItem svg {
+  font-size: 13px;
+  width: 16px;
+  flex-shrink: 0;
+}
+
 .cartBtn {
   position: relative;
 }

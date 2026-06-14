@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.deps import get_current_user, get_db, require_roles
-from app.models import Order, OrderItem, OrderStatus, User
+from app.models import Order, OrderItem, OrderStatus, PromoCode, User
 from app.routers.promocodes import increment_promo_usage, validate_promo
 from app.schemas import OrderCreate, OrderOut, OrderStatusUpdate
 
@@ -51,6 +51,7 @@ def create_order(
 ):
     total = sum(item.price * item.qty for item in body.items)
     promo_code_str = None
+    promo_code_id = None
     discount = Decimal("0")
 
     if body.promo_code:
@@ -60,11 +61,15 @@ def create_order(
         promo_code_str = body.promo_code
         discount = disc
         total = total - discount
+        promo = db.query(PromoCode).filter(PromoCode.code == body.promo_code.upper()).first()
+        if promo:
+            promo_code_id = promo.id
 
     order = Order(
         user_id=current_user.id,
         total=total,
         promo_code=promo_code_str,
+        promo_code_id=promo_code_id,
         discount=discount,
         name=body.name,
         surname=body.surname,

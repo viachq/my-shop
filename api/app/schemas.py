@@ -175,7 +175,7 @@ class OrderCreate(BaseModel):
 
 class OrderOut(BaseModel):
     id: int
-    user_id: int
+    user_id: int | None = None
     status: str
     total: Decimal
     promo_code: str | None = None

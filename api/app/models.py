@@ -85,6 +85,8 @@ class PromoCode(Base):
     expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=func.now())
 
+    orders = relationship("Order", back_populates="promo")
+
 
 class Order(Base):
     __tablename__ = "orders"
@@ -94,6 +96,7 @@ class Order(Base):
     status = Column(Enum(OrderStatus), default=OrderStatus.new, nullable=False)
     total = Column(Numeric(10, 2), nullable=False)
     promo_code = Column(String(50), nullable=True)
+    promo_code_id = Column(Integer, ForeignKey("promo_codes.id", ondelete="SET NULL"), nullable=True, index=True)
     discount = Column(Numeric(10, 2), nullable=True, default=0)
     name = Column(String(255), nullable=False)
     surname = Column(String(255), nullable=False)
@@ -107,6 +110,7 @@ class Order(Base):
     created_at = Column(DateTime, default=func.now(), nullable=False)
 
     user = relationship("User", back_populates="orders")
+    promo = relationship("PromoCode", back_populates="orders")
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
 
 
